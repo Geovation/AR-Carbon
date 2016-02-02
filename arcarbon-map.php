@@ -72,7 +72,12 @@ function run_arcarbon_map() {
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts' );
 	function enqueue_scripts() {
 		$user_id = get_current_user_id();
-		wp_enqueue_script( 'arcarbon-map', plugins_url( '/public/js/arcarbon-map.js', __FILE__ ),  array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'materialize', plugins_url( '/public/js/materialize.min.js', __FILE__ ),  array( 'jquery' ));
+		wp_enqueue_script( 'leaflet', plugins_url( '/public/js/leaflet.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'leaflet-draw', plugins_url( '/public/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'leaflet-locate', plugins_url( '/public/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'turf', plugins_url( '/public/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'arcarbon', plugins_url( '/public/js/arcarbon.js', __FILE__ ));
 		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/public/js/arcarbon-map-update.js', __FILE__ ), array('jquery'), 1.0, true );
 		wp_localize_script( 'arcarbon_map_update', 'update', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -137,12 +142,17 @@ function run_arcarbon_map() {
 		if ( is_page( 'Populate Map' )  && in_the_loop()  ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
 
-			$css = plugin_dir_url( __FILE__ ) . "public/css/arcarbon-map.css";
-			$js  = plugin_dir_url( __FILE__ ) . "public/js/arcarbon-map.js";
+
+			$css = plugin_dir_url( __FILE__ ) . "public/css/"
+
 			?>
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.css" ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">
 
 			<div class="mat-row ar-map-full">
 			    <div class="mat-col mat-s3 ar-map-full">
