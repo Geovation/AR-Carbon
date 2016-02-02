@@ -1,0 +1,6 @@
+
+
+map.min.js
+map.css
+
+page.php - Must include the if statement for loading specific page
