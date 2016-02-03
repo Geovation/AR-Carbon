@@ -8,15 +8,15 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              http://example.com
- * @since             1.0.0
+ * @link              http://www.geovation.uk
+ * @since             1.0.1
  * @package           Plugin_Name
  *
  * @wordpress-plugin
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           0.0.1
+ * Version:           1.0.1
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -29,33 +29,6 @@
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
-
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/arcarbon-map-name-activator.php
- */
-function activate_plugin_name() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/arcarbon-map-activator.php';
-	Plugin_Name_Activator::activate();
-}
-
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/arcarbon-map-name-deactivator.php
- */
-function deactivate_plugin_name() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/arcarbon-map-deactivator.php';
-	Plugin_Name_Deactivator::deactivate();
-}
-
-register_activation_hook( __FILE__, 'activate_plugin_name' );
-register_deactivation_hook( __FILE__, 'deactivate_plugin_name' );
-
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
-require plugin_dir_path( __FILE__ ) . 'includes/arcarbon-map-name.php';
 
 /**
  * Begins execution of the plugin.
@@ -72,13 +45,13 @@ function run_arcarbon_map() {
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts' );
 	function enqueue_scripts() {
 		$user_id = get_current_user_id();
-		wp_enqueue_script( 'materialize', plugins_url( '/public/js/materialize.min.js', __FILE__ ),  array( 'jquery' ));
-		wp_enqueue_script( 'leaflet', plugins_url( '/public/js/leaflet.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'leaflet-draw', plugins_url( '/public/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'leaflet-locate', plugins_url( '/public/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'turf', plugins_url( '/public/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'arcarbon', plugins_url( '/public/js/arcarbon.js', __FILE__ ));
-		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/public/js/arcarbon-map-update.js', __FILE__ ), array('jquery'), 1.0, true );
+		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.js', __FILE__ ),  array( 'jquery' ));
+		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ));
+		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array('jquery'), 1.0, true );
 		wp_localize_script( 'arcarbon_map_update', 'update', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'user_id'  => $user_id
@@ -143,7 +116,7 @@ function run_arcarbon_map() {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
 
 
-			$css = plugin_dir_url( __FILE__ ) . "public/css/"
+			$css = plugin_dir_url( __FILE__ ) . "assets/css/"
 
 			?>
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
@@ -154,7 +127,7 @@ function run_arcarbon_map() {
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">
 
-			<div class="mat-row ar-map-full">
+			<div class="mat-row ar-map-full ar-map-container">
 			    <div class="mat-col mat-s3 ar-map-full">
 			        <div>
 			            <div class="mat-row">
@@ -183,7 +156,7 @@ function run_arcarbon_map() {
 			                <!-- Fields go here -->
 			            </div>
 			        </div>
-			        <div class="mat-row ">
+			        <div class="mat-row ar-map-submit-holder">
 			            <button class="ar-map-submit ar-map-dark-green mat-btn mat-waves-effect mat-waves-light" type="submit" name="action" autofocus=""
 							href="<?php echo admin_url( 'admin-ajax.php?action=arcarbon_map_update' ) ?>"
 							data-geojson="<?php handleGeojson(get_user_meta(get_current_user_id(), "arcabon-map-geojson", true)); ?>" >
@@ -220,7 +193,7 @@ function run_arcarbon_map() {
 				  </div>
 				</div>
 
-				<!-- Modal Structure -->
+				<!-- Submit button succesful Modal Structure -->
 			  <div id="submit" class="mat-modal">
 			    <div class="mat-modal-content">
 			      <h4>Your new plots have been submitted</h4>
@@ -230,6 +203,27 @@ function run_arcarbon_map() {
 			      <a href="#!" class=" mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Ok, got it</a>
 			    </div>
 			  </div>
+
+			  <!-- Add farmer information Modal Structure -->
+		     <div id="field-text-edit" class="mat-modal">
+				 <div class="mat-modal-content">
+	  				 <h4>Tell us a little about this plot...</h4>
+					 <br>
+					 <div class="mat-input-field mat-col mat-s12">
+						 <i class="material-icons mat-prefix">mode_edit</i>
+						 <input placeholder="Give this a title!" id="field-title" type="text" class="mat-validate">
+	   		 			 <label for="field-title">Name this area</label>
+					</div>
+					<div class="mat-input-field mat-col mat-s12">
+						 <i class="material-icons mat-prefix">mode_edit</i>
+						 <textarea id="field-description" class="mat-materialize-textarea"></textarea>
+						 <label class="active" for="field-description">What do you do here?</label>
+				    </div>
+  			   </div>
+  			   <div class="mat-modal-footer">
+  				 <a href="#!" class="ar-carbon-save-description mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Save Info</a>
+  			   </div>
+		     </div>
 
 			</div>
 			<?php

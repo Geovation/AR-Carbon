@@ -22,8 +22,15 @@
     height: 100%;
     padding: 0px !important;
     margin: 0px;
-    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
 
+.ar-map-container {
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+
+.ar-map-submit-holder {
+    margin-bottom: 0px !important;
+    padding-bottom: 11px;
 }
 
 .ar-map-ar-title {
@@ -67,6 +74,14 @@ button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:active {
     margin: 0px;
 }
 
+.ar-map-plots-holder {
+    height: 385px;
+}
+
+.ar-map-plot {
+    cursor: pointer !important;
+}
+
 .ar-map-dark-green, .ar-map-dark-green:focus {
     background-color: #0e6939 !important;
 }
@@ -75,9 +90,9 @@ button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:active {
     height:40px;
 }
 
-.ar-map-plots-holder {
-    height: 395px;
-}
+
+
+
 
 nav {
     background-color: #F2F2F2;
