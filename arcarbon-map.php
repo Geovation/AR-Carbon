@@ -1,17 +1,7 @@
 <?php
 
 /**
- * The plugin bootstrap file
- *
- * This file is read by WordPress to generate the plugin information in the plugin
- * admin area. This file also includes all of the dependencies used by the plugin,
- * registers the activation and deactivation functions, and defines a function
- * that starts the plugin.
- *
- * @link              http://www.geovation.uk
- * @since             1.0.1
- * @package           Plugin_Name
- *
+
  * @wordpress-plugin
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
@@ -21,7 +11,7 @@
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       plugin-name
+ * Text Domain:       arcarbon-map
  * Domain Path:       /languages
  */
 
