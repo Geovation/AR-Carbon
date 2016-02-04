@@ -9,7 +9,7 @@
     text-decoration: none !important;
 }
 
-.leaflet-draw-actions >li > a, a:hover {
+.leaflet-draw-actions >li > a, .leaflet-draw-actions >li > a:hover {
     background-color: white;
 }
 
@@ -80,7 +80,14 @@ button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:active {
 
 .ar-map-plot {
     cursor: pointer !important;
+    padding-top:2px;
+    padding-bottom: 2px;
 }
+
+/** We need to make sure we can click on polygons and not get them obscured by labels **/
+/*.leaflet-overlay-pane {
+    z-index: 10;
+}*/
 
 .ar-map-dark-green, .ar-map-dark-green:focus {
     background-color: #0e6939 !important;
@@ -91,6 +98,34 @@ button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:active {
 }
 
 
+#mat-toast-container {
+    position: fixed !important;
+    right: 60px !important;
+}
+
+
+.ar-map-plot-title-holder {
+    margin-bottom: 4px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+/*.ar-map-plot-title {
+    text-overflow: ellipsis;
+overflow-x: hidden;
+}*/
+
+.leaflet-pelias-input {
+    padding: 0px !important;
+    left: 30px !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+.leaflet-pelias-result, .leaflet-pelias-list {
+    margin-bottom: 0px !important;
+}
 
 
 
@@ -101,6 +136,7 @@ nav {
 }
 
 .field-div-icon {
+    z-index: 0;
     text-align: center;
     vertical-align: middle;
     line-height: 37px;
