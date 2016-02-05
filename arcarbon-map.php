@@ -39,6 +39,7 @@ function run_arcarbon_map() {
 		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'leaflet-geocoder', plugins_url( '/assets/js/leaflet-geocoder-mapzen.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ));
 		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array('jquery'), 1.0, true );
@@ -104,8 +105,6 @@ function run_arcarbon_map() {
 
 		if ( is_page( 'Populate Map' )  && in_the_loop()  ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
-
-
 			$css = plugin_dir_url( __FILE__ ) . "assets/css/"
 
 			?>
@@ -115,6 +114,7 @@ function run_arcarbon_map() {
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.css" ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet-geocoder-mapzen.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">
 
 			<div class="mat-row ar-map-full ar-map-container">
@@ -176,7 +176,7 @@ function run_arcarbon_map() {
 				<div id="overfifty" class="mat-modal">
 				  <div class="mat-modal-content">
 					<h4>Your total hectares has exceeded 50!</h4>
-					<p>Please review your drawings to stay within the limit.</p>
+					<p>Please review your drawings to stay within the limit. If you want to add any information to this field, please click on it's boundary.</p>
 				  </div>
 				  <div class="mat-modal-footer">
 					<a href="#!" class=" mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Ok, got it</a>
