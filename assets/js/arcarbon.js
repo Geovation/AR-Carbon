@@ -105,8 +105,11 @@ jQuery(document).ready(function($) {
             }
         }
         else if (isPoint(layer) && userFarmUndefined()) {
-
-            userFarm = layer;
+            console.log("POINTER", layer);
+            userFarm = layer; // Set the user location
+            drawnItems.addLayer(layer); // Add it to the map drawnItems so we can see it after editing
+            layer.bindPopup("<b>Your Farms Location</b>").openPopup();
+            $(".leaflet-draw-draw-marker").hide(); // Hide the add marker button
         }
         else {
             // We have already defined our farm location
@@ -174,7 +177,7 @@ jQuery(document).ready(function($) {
     $(document).on("click", ".ar-map-plot", function() {
         var el = this;
         drawnItems.eachLayer(function(layer){
-            if (el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
+            if (isPolygon(layer) && el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
                 console.log("deleting is false", deleting);
                 populateFieldTextModal(layer);
             }
@@ -247,7 +250,7 @@ jQuery(document).ready(function($) {
     function layerFromDomEl(el) {
         var returnLayer;
         drawnItems.eachLayer(function(layer){
-            if (el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
+            if (isPolygon(layer) && el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
                 returnLayer = layer;
             }
         });
