@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.3
+ * Version:           1.0.4
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -202,12 +202,12 @@ function run_arcarbon_map() {
 					 <div class="mat-input-field mat-col mat-s12">
 						 <i class="material-icons mat-prefix">mode_edit</i>
 						 <input placeholder="Give this a title!" id="field-title" type="text" class="mat-validate">
-	   		 			 <label for="field-title">Name this area</label>
+	   		 			 <label class="field-title-label" for="field-title">Give this area an identifier (a name or a Field Parcel Number)</label>
 					</div>
 					<div class="mat-input-field mat-col mat-s12">
 						 <i class="material-icons mat-prefix">mode_edit</i>
 						 <textarea id="field-description" class="mat-materialize-textarea"></textarea>
-						 <label class="active" for="field-description">What do you do here?</label>
+						 <label class="active" for="field-description">Please give an indication of field use</label>
 				    </div>
   			   </div>
   			   <div class="mat-modal-footer">

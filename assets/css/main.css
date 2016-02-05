@@ -127,7 +127,20 @@ overflow-x: hidden;
     margin-bottom: 0px !important;
 }
 
+.field-title-label {
+    font-size: 14px !important;
+}
 
+.leaflet-control-custom {
+    text-align : center;
+    line-height: 1.6;
+    font-size : 16px;
+    cursor: pointer;
+}
+
+#field-text-edit {
+    z-index: 10000 !important;
+}
 
 nav {
     background-color: #F2F2F2;
