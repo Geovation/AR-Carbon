@@ -1,26 +1,29 @@
 
 jQuery(document).ready(function($) {
 
+    // Custom layer properties
+    // _arcArea
+    // _arcDomElement
+    // _arcFieldTitle
+    // _arcFieldDescription
 
     // Initialisation
     var boundingBox = L.latLngBounds(
-        L.latLng({lat: 49.62, lng:-10.7}),
-        L.latLng({lat: 62.52, lng :4.11})
-    );
-    var center = boundingBox.getCenter();
-    var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            L.latLng({lat: 49.62, lng:-10.7}),
+            L.latLng({lat: 62.52, lng :4.11})
+        ),
+        center = boundingBox.getCenter(),
+        osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
         map = new L.Map('arcarbon-map', {layers: [osm], center: center, zoom: 5}),
-        drawnItems = new L.FeatureGroup(),
+        drawnItems = new L.FeatureGroup().addTo(map),
         saveArray = [],
         totalHectares = 0.0,
-        userFarm = undefined,
+        userFarm,
         deleting = false,
-        currentLayer;
-
-
-    map.addLayer(drawnItems);
+        currentLayer,
+        boundaryNumber = 1;
 
     // Leaflet Control Setup
     var controls = new L.Control.Draw({
@@ -49,20 +52,28 @@ jQuery(document).ready(function($) {
     });
 
     map.addControl(controls);
-    L.control.locate().addTo(map);
+    L.control.locate({icon: 'fa fa-location-arrow'}).addTo(map);
     L.control.geocoder("search-sWC5vE4", {
       position: 'topright',
       expanded: true,
       bounds: boundingBox,
-      autocomplete: false
+      autocomplete: false,
+      markers: {
+          icon: new L.icon({
+              iconSize: [25, 41],
+              popupAnchor: [-1, -1],
+              iconUrl: '../wp-content/plugins/arcarbon-map/assets/js/images/marker-icon-locate.png'
+      }) }
     }).addTo(map);
 
 
-    // Event Handlers
+    // EVENT HANDLERS
+    // Lets handle all of the many events that we will get from users
 
     map.on('draw:created', function(event) {
+        // For all created layers
         var layer = event.layer;
-        console.log(isPoint(layer), userFarmUndefined());
+
         if (isPolygon(layer)) {
             // Check for intersection of the drawn polygon
             if (checkIntersections(layer)) {
@@ -72,13 +83,13 @@ jQuery(document).ready(function($) {
             // Calculate area and add the label on the polygon
             var area = getArea(layer);
             layer._arcArea = area;
-            addLabel(layer, area.toFixed(2));
 
             // Add DOM element to layer and DOM
+            fieldTitle = "";
             var _arcDomElement =
                 $('<div class="mat-row ar-map-plot">'+
                     '<div class="mat-col mat-s12 ar-map-plot-title-holder">'+
-                        '<b class="ar-map-plot-title mat-s12"> Boundary </b>'+
+                        '<b class="ar-map-plot-title mat-s12">' + fieldTitle + '</b>'+
                     '</div>'+
                     '<div class="mat-col mat-s6"> Hectares </div>'+
                     '<div class="mat-col mat-s6 hectares">'+area.toFixed(2)+'</div>'+
@@ -86,16 +97,20 @@ jQuery(document).ready(function($) {
             $(".ar-map-plots").append(_arcDomElement);
             layer._arcDomElement = _arcDomElement[0];
 
+            // Set the label
+            layer._arcFieldTitle = fieldTitle;
+            setLabel(layer, fieldTitle);
+
             // Set the colour and add the layer to the list of drawn layers
             layer.setStyle({fillColor: '#15693b', color: '#15693b'});
             drawnItems.addLayer(layer);
 
-            // Add a click listner for the modal so when it gets clicked in the map it opens
-            addLayerClickModal(layer);
-
             // Add the leaflet layer mouse over / dom layer highlight effect
             addMouseOver(layer, layer._arcDomElement);
             updateTotalArea();
+
+            // Add a click listner for the modal so when it gets clicked in the map it opens
+            addLayerClickModal(layer);
 
             // If we didn't gove over the 50 ha limit then we can label it
             if (totalHectares < 50) {
@@ -103,25 +118,23 @@ jQuery(document).ready(function($) {
                 populateFieldTextModal(layer);
                 $("#field-text-edit").openModal();
             }
+
         }
         else if (isPoint(layer) && userFarmUndefined()) {
-            console.log("POINTER", layer);
             userFarm = layer; // Set the user location
             drawnItems.addLayer(layer); // Add it to the map drawnItems so we can see it after editing
             layer.bindPopup("<b>Your Farms Location</b>").openPopup();
             $(".leaflet-draw-draw-marker").hide(); // Hide the add marker button
         }
         else {
-            // We have already defined our farm location
-            //  map.remove(layer);
+            // We have already defined our farm location, maybe we want to thow a modal error?
+            // map.remove(layer);
         }
-
-
 
     });
 
     map.on('draw:edited', function (event) {
-
+        // For all edited layers
         event.layers.eachLayer(function (layer) {
 
             if (isPolygon(layer)) {
@@ -134,13 +147,11 @@ jQuery(document).ready(function($) {
                 layer._arcArea = area;
                 $(layer._arcDomElement).find(".hectares").text(area.toFixed(2));
                 removeLabel(layer);
-                addLabel(layer, area.toFixed(2));
+                setLabel(layer, layer._arcFieldTitle);
                 updateTotalArea();
             }
             else if (isPoint) {
                 // The user has changed their farms location
-
-                // Handle farm
 
                 userFarm = layer;
             }
@@ -149,9 +160,16 @@ jQuery(document).ready(function($) {
     });
 
     map.on('draw:deleted', function (event) {
+        // For all deleted layers
         event.layers.eachLayer(function (layer) {
-            $(layer._arcDomElement).remove();
-            removeLabel(layer);
+            if (isPolygon(layer)) {
+                $(layer._arcDomElement).remove();
+                removeLabel(layer);
+            }
+            else if (isPoint(layer)) {
+                userFarm = undefined;
+                $(".leaflet-draw-draw-marker").show();
+            }
         });
         updateTotalArea();
         deleting = false;
@@ -160,7 +178,6 @@ jQuery(document).ready(function($) {
     map.on('draw:deletestart', function (event) {
         deleting = true;
     });
-
     map.on('draw:editstart', function (event) {
         $(".field-div-icon").hide();
     });
@@ -175,28 +192,31 @@ jQuery(document).ready(function($) {
     });
 
     $(document).on("click", ".ar-map-plot", function() {
+        // Modal popup for clicking on a layer in the side panel
         var el = this;
         drawnItems.eachLayer(function(layer){
             if (isPolygon(layer) && el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
-                console.log("deleting is false", deleting);
                 populateFieldTextModal(layer);
             }
         });
     });
 
     $(document).on("mouseover", ".ar-map-plot", function() {
+        // On mouse over make font larger
         changeLabelSize(this, 20);
     });
 
     $(document).on("mouseout", ".ar-map-plot", function() {
+        // On mouse over make font normal size
         changeLabelSize(this, 15);
     });
 
-    function changeLabelSize(domElement, size) {
+    function changeLabelSize(domElement, size, width) {
+        // Change the label size
         var layer = layerFromDomEl(domElement);
         var label = getLabel(layer);
         label.css("font-size", size+"px");
-        label.css("margin-left", (-15) - (size - 12) );
+        label.css("margin-left", (- width / 2 ) - (size - 8) );
     }
 
     function addLayerClickModal(layer) {
@@ -205,7 +225,13 @@ jQuery(document).ready(function($) {
         layer.on("click", function (e) {
             populateFieldTextModal(layer);
         });
-        $(layer.label._icon).click(function(){
+
+        if (layer.label._icon) {
+            $(layer.label._icon).unbind('click');
+        }
+
+        $(layer.label._icon).on("click", function(){
+            console.log("label click");
             populateFieldTextModal(layer);
         });
     }
@@ -216,12 +242,11 @@ jQuery(document).ready(function($) {
 
         var hoverOn = function (toast) {
             $(domElement).css("background-color", "#daeac6");
-            changeLabelSize(domElement, 16);
-            //if (toast && layer._arcFieldTitle) { Materialize.toast(layer._arcFieldTitle, 1000);}
+            changeLabelSize(domElement, 16, 100);
         };
         var hoverOff = function () {
             $(domElement).css("background-color", "#ffffff");
-            changeLabelSize(domElement, 12);
+            changeLabelSize(domElement, 12, 100);
          };
 
         // Have to do it for the label and the polgon layer (because leaflet)
@@ -237,17 +262,45 @@ jQuery(document).ready(function($) {
         // Save the description to the layer when the user clicks save
         var title = $("#field-title").val();
         var description = $("#field-description").val();
+
         currentLayer._arcFieldTitle = title;
         currentLayer._arcFieldDescription = description;
-        console.log($(currentLayer._arcDomElement));
         $(currentLayer._arcDomElement).find(".ar-map-plot-title").text(title);
+        removeLabel(currentLayer);
+        setLabel(currentLayer, title);
         $("#field-title").val("");
         $("#field-description").val("");
+
     });
 
-    // Helper Functions
+    // Handling user input for the field title
+    $("#field-title").keyup(function(e) {
+        handleTitle(this, false);
+    });
+    $("#field-title").focus(function(e) {
+        handleTitle(this, true);
+    });
+
+    function handleTitle(context, focus) {
+        // We want to prevent users from having blank or duplicate titles!
+        var title = $(context).val();
+        if ((!focus && duplicateTitles(title)) || title === "") {
+            $(".ar-carbon-save-description").css("visibility", "hidden");
+            $(".field-title-label").css("color", "#FF7272");
+            $(".field-title-label").text("Blank or duplicate field name! Field names must be none blank and unique!");
+        }
+        else {
+            $(".ar-carbon-save-description").css("visibility", "visible");
+            $(".field-title-label").css("color", "#9e9e9e");
+            $(".field-title-label").text("Give this area an identifier (a name or a Field Parcel Number)");
+        }
+    }
+
+    // HELPER FUNCTIONS
+    // These let us be more more productive throughout our code
 
     function layerFromDomEl(el) {
+        // Get the layer of the corresponding DOM element
         var returnLayer;
         drawnItems.eachLayer(function(layer){
             if (isPolygon(layer) && el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
@@ -257,13 +310,8 @@ jQuery(document).ready(function($) {
         return returnLayer;
     }
 
-    function getLabel(layer) {
-        return $(layer.label._icon);
-    }
-
     function getLayerCount(layers) {
         // Returns the number of layers
-
         var count = 0;
         var layer;
 
@@ -275,43 +323,68 @@ jQuery(document).ready(function($) {
         return count;
     }
 
-    // Label Related Functions
-
-    function removeLabel(layer) {
-        map.removeLayer(layer.label);
+    function duplicateTitles(title) {
+        var duplicate = false;
+        drawnItems.eachLayer(function(layer){
+            if (isPolygon(layer)) { // Make sure its just polygons
+                console.log("check layer dupe", layer);
+                if (title === layer._arcFieldTitle) { // if title matches (duplicate title)
+                    console.log("duplicate");
+                    duplicate = true;
+                }
+            }
+        });
+        return duplicate;
     }
 
-    function addLabel(layer, text) {
+    // LABEL RELATED FUNCTIONS
+    // These are responsible for dealing with our label related activities
+
+    function setLabel(layer, text) {
+        // Set the label name
         layer.label = L.marker(getCentroid(layer._latlngs), {
             icon: L.divIcon({
                 className: 'field-div-icon',
                 html: String(text),
-                iconSize: [30, 30]
+                iconSize: [100, 30]
             })
         }).addTo(map);
 
+        addLayerClickModal(layer); // We need to make sure something happens onclick
     }
+
+    function getLabel(layer) {
+        // Get a label DOM element from a layer
+        return $(layer.label._icon);
+    }
+
+    function removeLabel(layer) {
+        // Remove the layer label
+        map.removeLayer(layer.label);
+    }
+
 
     // Update / UI Functions
 
     function populateFieldTextModal(layer) {
+        // Populate the modal for the layer
         if (!deleting) {
-            var title = layer._arcFieldTitle || "Boundary";
-            console.log(title);
+
+            var title = layer._arcFieldTitle || "";
             var description = layer._arcFieldDescription || "";
-            $("#field-title").val(title);
-            $("#field-description").val(description);
 
             currentLayer = layer;
+            $("#field-title").val(title);
+            $("#field-description").val(description);
             $("#field-text-edit").openModal();
+            $("#field-title").focus();
+
         }
     }
 
     function updatePostData() {
-        console.log(drawnItems);
         var geojson = JSON.stringify(drawnItems.toGeoJSON());
         $(".ar-map-submit").attr("data-geojson", geojson);
-        $(".ar-map-submit").attr("data-area", totalHectares);
     }
 
     function updateTotalArea() {
@@ -319,10 +392,11 @@ jQuery(document).ready(function($) {
         var area = 0.0;
         totalHectares = 0.0;
 
-
         if (getLayerCount(drawnItems)) {
             drawnItems.eachLayer(function(layer) {
-                totalHectares += layer._arcArea;
+                if (isPolygon(layer)) {
+                    totalHectares += layer._arcArea;
+                }
             });
         }
         checkTotalHectares(totalHectares);
@@ -405,6 +479,32 @@ jQuery(document).ready(function($) {
         return [ cyTimes6SignedArea / sixSignedArea, cxTimes6SignedArea / sixSignedArea ];
     };
 
-    // FOR ALL LAYERS YOU NEED TO LOOP THROUGH DRAWN LAYERS!
+
+    var homeControl = L.Control.extend({
+        // Create our own home control button
+      options: {
+        position: 'topleft'
+        //control position - allowed: 'topleft', 'topright', 'bottomleft', 'bottomright'
+      },
+      onAdd: function (map) {
+          var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom fa fa-home');
+
+          container.style.backgroundColor = 'white';
+          container.style.width = '27px';
+          container.style.height = '27px';
+          container.style.pointer= 'cursor';
+
+          container.onclick = function(){
+              console.log("click");
+              if (!userFarmUndefined()) {
+                  map.setView(userFarm.getLatLng(), 12);
+              }
+          };
+       return container;
+      }
+    });
+
+    // Add it to the map
+    map.addControl(new homeControl());
 
 });

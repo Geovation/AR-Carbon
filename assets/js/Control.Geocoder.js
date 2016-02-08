@@ -102,10 +102,16 @@ module.exports = {
 				this._map.removeLayer(this._geocodeMarker);
 			}
 
-			this._geocodeMarker = new L.Marker(result.center)
-				.bindPopup(result.html || result.name)
-				.addTo(this._map)
-				.openPopup();
+			this._geocodeMarker = new L.Marker(
+				L.marker(result.center, {
+					icon: new L.icon({
+						iconUrl: '/marker-icon-locate.png'
+				}) })
+
+
+			).bindPopup(result.html || result.name)
+			.addTo(this._map)
+			.openPopup();
 
 			return this;
 		},
