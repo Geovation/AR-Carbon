@@ -7,6 +7,8 @@ jQuery(document).ready(function($) {
     // _arcFieldTitle
     // _arcFieldDescription
 
+    var DEVELOPMENT = true;
+
     // Initialisation
     var boundingBox = L.latLngBounds(
             L.latLng({lat: 49.62, lng:-10.7}),
@@ -25,33 +27,38 @@ jQuery(document).ready(function($) {
         currentLayer,
         boundaryNumber = 1;
 
-    if (USER_GEOJSON) {
-        console.log("Reinstantiating GeoJSON");
-        reinstantiateData(USER_GEOJSON);
+    var enableDraw = {
+        polyline  : false,
+        circle    : false,
+        rectangle : false,
+        marker    : true,
+        polygon  : {
+            allowIntersection: false,
+            drawError: {
+               color: '#e1e100', // Color the shape will turn when intersects
+               message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
+            },
+            weight: 12
+        }
+    };
+    var enableEdit = {
+        featureGroup: drawnItems,
+        poly : {
+            allowIntersection : false
+        }
+    };
+
+
+    if (!DEVELOPMENT && USER_GEOJSON) {
+        $(".ar-map-submit").prop('disabled',true);
+        enableDraw = false;
+        enableEdit = false;
     }
 
     // Leaflet Control Setup
     var controls = new L.Control.Draw({
-        draw: {
-            polyline  : false,
-            circle    : false,
-            rectangle : false,
-            marker    : true,
-            polygon  : {
-                allowIntersection: false,
-                drawError: {
-                   color: '#e1e100', // Color the shape will turn when intersects
-                   message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
-                },
-                weight: 12
-            }
-        },
-        edit: {
-            featureGroup: drawnItems,
-            poly : {
-                allowIntersection : false
-            }
-        }
+        draw : enableDraw,
+        edit : enableEdit
     });
 
     var disableControls = new L.Control.Draw({
@@ -74,6 +81,10 @@ jQuery(document).ready(function($) {
       }) }
     }).addTo(map);
 
+
+    if (USER_GEOJSON) {
+        reinstantiateData(USER_GEOJSON);
+    }
 
     // EVENT HANDLERS
     // Lets handle all of the many events that we will get from users
@@ -435,7 +446,6 @@ jQuery(document).ready(function($) {
             geojson.features.push(layerjson);
         });
         geojsonstr = JSON.stringify(geojson);
-        console.log(geojsonstr);
         $(".ar-map-submit").attr("data-geojson", geojsonstr);
     }
 
