@@ -61,11 +61,6 @@ jQuery(document).ready(function($) {
         edit : enableEdit
     });
 
-    var disableControls = new L.Control.Draw({
-        draw: false,
-        edit : false
-    });
-
     map.addControl(controls);
     L.control.locate({icon: 'fa fa-location-arrow'}).addTo(map);
     L.control.geocoder("search-sWC5vE4", {
@@ -313,6 +308,7 @@ jQuery(document).ready(function($) {
         $("#field-title").val("");
         $("#field-description").val("");
         updatePostData();
+        $(".ar-map-submit").prop('disabled',false);
 
         // If we didn't gove over the 50 ha limit then we can label it
         checkTotalHectares(totalHectares, true);
@@ -425,6 +421,7 @@ jQuery(document).ready(function($) {
             $("#field-title").val(title);
             $("#field-description").val(description);
             $("#field-text-edit").openModal();
+            $(".ar-map-submit").prop('disabled',true);
             $("#field-title").focus();
             $(".field-description-active").addClass("mat-active");
 
