@@ -297,8 +297,11 @@ jQuery(document).ready(function($) {
 
     $(document).on("click", ".ar-carbon-save-description", function() {
         // Save the description to the layer when the user clicks save
-        var title = $("#field-title").val();
-        var description = $("#field-description").val();
+
+
+
+        var title = $("#field-title").val().trim();
+        var description = $("#field-description").val().trim();
 
         currentLayer._arcFieldTitle = title;
         currentLayer._arcFieldDescription = description;
@@ -474,7 +477,7 @@ jQuery(document).ready(function($) {
             });
         }
 
-        console.log($(".field-description-active"));
+        //console.log($(".field-description-active"));
         map.fitBounds(drawnItems.getBounds());
 
     }
