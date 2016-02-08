@@ -142,6 +142,10 @@ overflow-x: hidden;
     z-index: 10000 !important;
 }
 
+.ar-button-holder {
+    margin: 0px;
+}
+
 nav {
     background-color: #F2F2F2;
     height: 40px !important;

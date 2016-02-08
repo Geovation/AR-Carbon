@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.4
+ * Version:           1.0.5
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -42,7 +42,7 @@ function run_arcarbon_map() {
 		wp_enqueue_script( 'leaflet-geocoder', plugins_url( '/assets/js/leaflet-geocoder-mapzen.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ));
-		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array('jquery'), 1.0, true );
+		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), 1.0, true );
 		wp_localize_script( 'arcarbon_map_update', 'update', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'user_id'  => $user_id
@@ -54,45 +54,22 @@ function run_arcarbon_map() {
 	function arcarbon_map_update() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 
-
 			$user_id = $_POST['user_id'];
-			$geojson = strval($_POST['geojson']);
-			$area    = strval($_POST['area']);
+			$geojson = stripslashes($_POST['geojson']);
 
-			$geojson_meta = "arcarbon_map_geojson";
-			$area_meta    = "arcarbon_map_area";
-
-			$updateGeojson = update_user_meta( $user_id, $geojson_meta, $geojson );
-			$updateArea    = update_user_meta( $user_id, $area_meta, $area);
+			$updateGeojson = update_user_meta( $user_id, "arcarbon_map_geojson", $geojson );
 
 			$updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
-			$updateAreaStr    = ($updateArea)     ? 'true' : 'false';
+			$checkGeojson = get_user_meta($user_id,  "arcarbon_map_geojson", true );
+			$geojsonCheck = ( $checkGeojson == $geojson);
 
-			$areaCheck    = (get_user_meta($user_id,  $area_meta ) == $area);
-			$geojsonCheck = (get_user_meta($user_id,  $geojson_meta ) == $geojson);
-			$bothCheck    = ($geojsonCheck && $areaCheck);
-
-			if ( !$bothCheck ) {
-				echo "{'error': 'Request did not update user's geojson and area data', 'code', 'Area : $area, GeoJSON : $geojson'}";
-				die();
-			}
-			if ( !$areaCheck) {
-				echo "{'error' : 'Request did not update area data'}";
-				die();
-			}
 			if ( !$geojsonCheck ) {
-				echo "{'error' : 'Request did not update user's geojson data', 'code': '' }";
-				die();
+				echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
 			}
-			if ($bothCheck) {
-				echo "{'success' : 'Request was successful, meta data updated'}";
+			else {
+				echo "{'success': 'Data posted to WP!'}";
 			}
-
-
-			die();
 		}
-
-		//
 		else {
 			echo "{'error', 'Something went wrong'}";
 		}
@@ -102,12 +79,18 @@ function run_arcarbon_map() {
 	add_action( 'the_content', 'arcarbon_map' );
 	function arcarbon_map($content) {
 		$current_user = wp_get_current_user();
+		$user_id = get_current_user_id();
 
 		if ( is_page( 'Populate Map' )  && in_the_loop()  ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
 			$css = plugin_dir_url( __FILE__ ) . "assets/css/"
 
 			?>
+
+			<script type="text/javascript">
+
+   				var USER_GEOJSON = '<?php echo get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true); ?>'
+			</script>
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
@@ -179,7 +162,7 @@ function run_arcarbon_map() {
 					<p>Please review your drawings to stay within the limit. If you want to add any information to this field, please click on it's boundary.</p>
 				  </div>
 				  <div class="mat-modal-footer">
-					<a href="#!" class=" mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Ok, got it</a>
+					<a href="#!" class="ar-over-fifty-ok mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Ok, got it</a>
 				  </div>
 				</div>
 
@@ -194,6 +177,18 @@ function run_arcarbon_map() {
 			    </div>
 			  </div>
 
+			  <!-- Submit button confirm Modal Structure -->
+			<div id="confirm-submit" class="mat-modal">
+			  <div class="mat-modal-content">
+				<h4>Once you have submitted you can not change your drawings</h4>
+				<p>Are you sure that you want to confirm these drawings? Upon submission they can not be changed.</p>
+			  </div>
+			  <div class="mat-modal-footer">
+				<a href="#!" class=" mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">I want to change something</a>
+				<a href="#!" class=" ar-map-submit-confirm mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Confirm</a>
+			  </div>
+			</div>
+
 			  <!-- Add farmer information Modal Structure -->
 		     <div id="field-text-edit" class="mat-modal">
 				 <div class="mat-modal-content">
@@ -207,11 +202,13 @@ function run_arcarbon_map() {
 					<div class="mat-input-field mat-col mat-s12">
 						 <i class="material-icons mat-prefix">mode_edit</i>
 						 <textarea id="field-description" class="mat-materialize-textarea"></textarea>
-						 <label class="active" for="field-description">Please give an indication of field use</label>
+						 <label class="mat-active field-description-active" for="field-description">Please give an indication of field use</label>
 				    </div>
   			   </div>
   			   <div class="mat-modal-footer">
-  				 <a href="#!" class="ar-carbon-save-description mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Save Info</a>
+				   <div class="mat-row ar-button-holder">
+	  				   <a href="#!" class="ar-carbon-save-description mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Save Info</a>
+				   </div>
   			   </div>
 		     </div>
 
