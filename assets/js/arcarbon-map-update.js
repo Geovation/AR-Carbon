@@ -1,25 +1,23 @@
 jQuery(document).ready(function($) {
-    $( document ).on( 'click', '.ar-map-submit', function() {
+    $( document ).on( 'click', '.ar-map-submit-confirm', function() {
 
-
-        var button  = $(this);
+        var button  = $(".ar-map-submit");
         var geojson = button.attr("data-geojson");
-        var area    = button.attr("data-area");
+        console.log(geojson);
         var url     = update.ajax_url;
         var user_id = update.user_id;
 
         var data = {
             action : 'arcarbon_map_update',
             user_id : user_id,
-            geojson : geojson,
-            area    : area
+            geojson : geojson
         };
 
         // Disable the button whilst the geojson is being submitted
         button.prop('disabled',true);
 
         // Check that the data is no undefined etc
-        if (checkData(data)) {
+        if (data && checkData(data)) {
             console.log("Valid: ", data);
         	$.ajax({
         		url: url,

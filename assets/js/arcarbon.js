@@ -25,6 +25,11 @@ jQuery(document).ready(function($) {
         currentLayer,
         boundaryNumber = 1;
 
+    if (USER_GEOJSON) {
+        console.log("Reinstantiating GeoJSON");
+        reinstantiateData(USER_GEOJSON);
+    }
+
     // Leaflet Control Setup
     var controls = new L.Control.Draw({
         draw: {
@@ -42,7 +47,10 @@ jQuery(document).ready(function($) {
             }
         },
         edit: {
-            featureGroup: drawnItems
+            featureGroup: drawnItems,
+            poly : {
+                allowIntersection : false
+            }
         }
     });
 
@@ -73,6 +81,13 @@ jQuery(document).ready(function($) {
     map.on('draw:created', function(event) {
         // For all created layers
         var layer = event.layer;
+        handleCreate(layer, false); // reinstantiate is false as we don't want to do that
+
+
+    });
+
+    function handleCreate(layer, reinstantiate) {
+        var fieldTitle;
 
         if (isPolygon(layer)) {
             // Check for intersection of the drawn polygon
@@ -85,7 +100,8 @@ jQuery(document).ready(function($) {
             layer._arcArea = area;
 
             // Add DOM element to layer and DOM
-            fieldTitle = "";
+            fieldTitle = layer._arcFieldTitle || "";
+
             var _arcDomElement =
                 $('<div class="mat-row ar-map-plot">'+
                     '<div class="mat-col mat-s12 ar-map-plot-title-holder">'+
@@ -112,12 +128,10 @@ jQuery(document).ready(function($) {
             // Add a click listner for the modal so when it gets clicked in the map it opens
             addLayerClickModal(layer);
 
-            // If we didn't gove over the 50 ha limit then we can label it
-            if (totalHectares < 50) {
-                currentLayer = layer;
+            if (!reinstantiate) {
                 populateFieldTextModal(layer);
-                $("#field-text-edit").openModal();
             }
+
 
         }
         else if (isPoint(layer) && userFarmUndefined()) {
@@ -131,7 +145,8 @@ jQuery(document).ready(function($) {
             // map.remove(layer);
         }
 
-    });
+        updatePostData(); // Make sure we update post data!
+    }
 
     map.on('draw:edited', function (event) {
         // For all edited layers
@@ -149,13 +164,16 @@ jQuery(document).ready(function($) {
                 removeLabel(layer);
                 setLabel(layer, layer._arcFieldTitle);
                 updateTotalArea();
+                checkTotalHectares(totalHectares, true);
             }
             else if (isPoint) {
                 // The user has changed their farms location
-
                 userFarm = layer;
             }
+
         });
+
+        updatePostData(); // Make sure we update the post data!
 
     });
 
@@ -172,6 +190,7 @@ jQuery(document).ready(function($) {
             }
         });
         updateTotalArea();
+        checkTotalHectares(totalHectares, true);
         deleting = false;
     });
 
@@ -210,6 +229,18 @@ jQuery(document).ready(function($) {
         // On mouse over make font normal size
         changeLabelSize(this, 15);
     });
+
+    $(document).on("click", ".ar-map-submit", function() {
+        if (totalHectares < 50.0) {
+            $("#confirm-submit").openModal();
+        }
+        else {
+            $("#overfifty").openModal();
+        }
+
+    });
+
+    //$(document).on("click", ar-over-fifty-ok
 
     function changeLabelSize(domElement, size, width) {
         // Change the label size
@@ -270,6 +301,11 @@ jQuery(document).ready(function($) {
         setLabel(currentLayer, title);
         $("#field-title").val("");
         $("#field-description").val("");
+        updatePostData();
+
+        // If we didn't gove over the 50 ha limit then we can label it
+        checkTotalHectares(totalHectares, true);
+
 
     });
 
@@ -368,6 +404,7 @@ jQuery(document).ready(function($) {
 
     function populateFieldTextModal(layer) {
         // Populate the modal for the layer
+        console.log(layer);
         if (!deleting) {
 
             var title = layer._arcFieldTitle || "";
@@ -378,13 +415,61 @@ jQuery(document).ready(function($) {
             $("#field-description").val(description);
             $("#field-text-edit").openModal();
             $("#field-title").focus();
+            $(".field-description-active").addClass("mat-active");
 
         }
     }
 
     function updatePostData() {
-        var geojson = JSON.stringify(drawnItems.toGeoJSON());
-        $(".ar-map-submit").attr("data-geojson", geojson);
+        var geojson = {
+          "type": "FeatureCollection",
+          "features": []
+        };
+        var layerjson;
+        drawnItems.eachLayer(function(layer) {
+            layerjson = layer.toGeoJSON();
+            layerjson.properties.area = layer._arcArea;
+            layerjson.properties.title = layer._arcFieldTitle;
+            layerjson.properties.description = layer._arcFieldDescription;
+            console.log(layerjson);
+            geojson.features.push(layerjson);
+        });
+        geojsonstr = JSON.stringify(geojson);
+        console.log(geojsonstr);
+        $(".ar-map-submit").attr("data-geojson", geojsonstr);
+    }
+
+    function reinstantiateData(geojson) {
+
+        // Get the geojson from the WP database and then add it to drawnLayers
+        geojson = JSON.parse(geojson);
+        if (geojson && geojson.features) {
+            L.geoJson(geojson, {
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties) {
+                        layer._arcArea = feature.properties.area;
+                        layer._arcFieldTitle = feature.properties.title;
+                        layer._arcFieldDescription = feature.properties.description;
+                    }
+                    if (feature.type == "Point") {
+                        layer._arcIsFarmHome = true;
+                    }
+                }
+            }).eachLayer(function(layer){
+                drawnItems.addLayer(layer);
+
+                if (layer._arcIsFarmHome) {
+                    userFarm = layer;
+                }
+                else {
+                    handleCreate(layer, true);
+                }
+            });
+        }
+
+        console.log($(".field-description-active"));
+        map.fitBounds(drawnItems.getBounds());
+
     }
 
     function updateTotalArea() {
@@ -399,13 +484,11 @@ jQuery(document).ready(function($) {
                 }
             });
         }
-        checkTotalHectares(totalHectares);
         $("#area-value").html("<h5>"+totalHectares.toFixed(2)+"</h2>");
-        updatePostData();
 
     }
 
-    function checkTotalHectares(totalHectares) {
+    function checkTotalHectares(totalHectares, openModal) {
         // Check if the total hectares is over 50
 
         if (totalHectares > 50.0) {
@@ -413,7 +496,9 @@ jQuery(document).ready(function($) {
             $(".ar-map-total").css("color", "#ff0000");
             $(".leaflet-draw-draw-polygon").hide();
             $(".ar-map-submit").prop('disabled',true);
-            $('#overfifty').openModal();
+            if (openModal) {
+                $('#overfifty').openModal();
+            }
         }
         else {
             $(".ar-map-total").css("background-color", "#daeac6");
@@ -422,6 +507,8 @@ jQuery(document).ready(function($) {
             $(".leaflet-draw-draw-polygon").show();
         }
     }
+
+
 
     // Geometry related functions
 
@@ -458,7 +545,7 @@ jQuery(document).ready(function($) {
         return  userFarm === undefined;
     }
 
-    var getCentroid = function (arr) {
+    function getCentroid(arr) {
         // Allows us to have more central labels
         var twoTimesSignedArea = 0;
         var cxTimes6SignedArea = 0;
@@ -477,7 +564,7 @@ jQuery(document).ready(function($) {
         }
         var sixSignedArea = 3 * twoTimesSignedArea;
         return [ cyTimes6SignedArea / sixSignedArea, cxTimes6SignedArea / sixSignedArea ];
-    };
+    }
 
 
     var homeControl = L.Control.extend({
@@ -495,7 +582,6 @@ jQuery(document).ready(function($) {
           container.style.pointer= 'cursor';
 
           container.onclick = function(){
-              console.log("click");
               if (!userFarmUndefined()) {
                   map.setView(userFarm.getLatLng(), 12);
               }
