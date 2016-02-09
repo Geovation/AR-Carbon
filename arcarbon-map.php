@@ -30,6 +30,10 @@ if ( ! defined( 'WPINC' ) ) {
  * @since    1.0.0
  */
 
+// Include our options file for setting up plugin settings like API keys
+include 'map-options.php';
+
+
 function run_arcarbon_map() {
 
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts' );
@@ -87,6 +91,8 @@ function run_arcarbon_map() {
 
 			?>
 
+
+			<?php // echo get_option( "map_api_key"); ?>
 			<script type="text/javascript">
    				var USER_GEOJSON = '<?php echo get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true); ?>'
 			</script>
@@ -105,7 +111,7 @@ function run_arcarbon_map() {
 			        <div>
 			            <div class="row">
 			                <div class="col s12">
-			                    <h6> Welcome back </h6>
+			                    <h6> Welcome back  </h6>
 			                    <h5> <?php echo $current_user->user_firstname; echo $current_user->user_lastname; ?> </h5>
 			                </div>
 			            </div>
@@ -131,7 +137,7 @@ function run_arcarbon_map() {
 			        </div>
 			        <div class="row ar-map-submit-holder">
 			            <button class="ar-map-submit ar-map-dark-green btn waves-effect waves-light" type="submit" name="action" autofocus=""
-							href="<?php echo admin_url( 'admin-ajax.php?action=arcarbon_map_update' ) ?>"
+							href="<?php echo admin_url( 'admin-ajax.php?action=arcarbon_map_update' ) ?>" disabled
 							data-geojson="<?php handleGeojson(get_user_meta(get_current_user_id(), "arcabon-map-geojson", true)); ?>" >
 							Submit
 			                <i class="material-icons right">send</i>
@@ -192,8 +198,8 @@ function run_arcarbon_map() {
 		   <!-- Submit button confirm Modal Structure -->
 		   <div id="submit-error" class="modal">
 			<div class="modal-content">
-			  <h4>Something appears to has gone wrong</h4>
-			  <p>It look like something has gone wrong. It may have been a network error, so please try again.</p>
+			  <h4>Something appears to have gone wrong</h4>
+			  <p>It looks like something has gone wrong. It may have been a network error, so please try again.</p>
 			</div>
 			<div class="modal-footer">
 			  <a href="#!" class="modal-close waves-effect waves-green btn-flat">Ok, got it</a>
@@ -203,8 +209,8 @@ function run_arcarbon_map() {
 		   <!-- Submit button confirm Modal Structure -->
 		   <div id="geojson-error" class="modal">
 			<div class="modal-content">
-			  <h4>Something appears to has gone wrong</h4>
-			  <p>It looks like some boundary data has corrupted. Please contact your AR Carbon point of contact. </p>
+			  <h4>Something appears to have gone wrong</h4>
+			  <p>It looks like your drawing data has corrupted. Please contact your AR Carbon point of contact. </p>
 			</div>
 			<div class="modal-footer">
 			  <a href="#!" class="modal-close waves-effect waves-green btn-flat">Ok, got it</a>
