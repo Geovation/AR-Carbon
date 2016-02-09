@@ -14,10 +14,11 @@ jQuery(document).ready(function($) {
     if (localStorage && localStorage.getItem("arc-debug")) {
         DEVELOPMENT = true;
     }
-    var debug = function(msg) {
-        if (typeof console !== "undefined") { // console is not universal
-            console.debug(msg);
-        }
+    window.console = window.console || {
+        log: function () {},
+        error: function () {},
+        debug: function () {},
+        warn: function () {}
     };
 
     // Initialisation
@@ -140,23 +141,19 @@ jQuery(document).ready(function($) {
 
             // Set the label
             layer._arcFieldTitle = fieldTitle;
-            setLabel(layer, fieldTitle);
+            setLabel(layer, fieldTitle); // Also adds click and mouseover listners
 
             // Set the colour and add the layer to the list of drawn layers
             layer.setStyle({fillColor: '#15693b', color: '#15693b'});
             drawnItems.addLayer(layer);
 
-            // Add the leaflet layer mouse over / dom layer highlight effect
-            addMouseOver(layer, layer._arcDomElement);
+            addLayerMouseOver(layer, layer._arcDomElement); // Add the leaflet layer mouse over / dom layer highlight effect
+            addLayerClickModal(layer); // Add a click listner for the modal so when it gets clicked in the map it opens
             updateTotalArea();
-
-            // Add a click listner for the modal so when it gets clicked in the map it opens
-            //addLayerClickModal(layer);
 
             if (!reinstantiate) {
                 populateFieldTextModal(layer);
             }
-
 
         }
         else if (isPoint(layer) && userFarmUndefined()) {
@@ -266,13 +263,15 @@ jQuery(document).ready(function($) {
     function changeLabelSize(domElement, size, width) {
         // Change the label size
         var layer = layerFromDomEl(domElement);
-        var label = getLabel(layer);
-        label.css("font-size", size+"px");
-        label.css("margin-left", (- width / 2 ) - (size - 8) );
+        if (layer) {
+            var label = getLabel(layer);
+            label.css("font-size", size+"px");
+            label.css("margin-left", (- width / 2 ) - (size - 8) );
+        }
     }
 
     function addLayerClickModal(layer) {
-        var label = $(layer.label._icon);
+        var label = layer.label;
         // Disable layer modals
 
         // On click on either the polygon or the label -- ugly but necessary as label overlays layer
@@ -280,35 +279,29 @@ jQuery(document).ready(function($) {
             populateFieldTextModal(layer);
         });
 
-        if (label.length) {
-            label.on("click", function(){
-                populateFieldTextModal(layer);
-            });
-        }
-
     }
 
-    function addMouseOver(layer, domElement) {
-        // Show the layers in the sidebar when they get hovered over
-        var labelElement = layer.label._icon;
+    function hoverOn(domElement) {
+        $(domElement).css("background-color", "#daeac6");
+        changeLabelSize(domElement, 16, 100);
+    }
 
-        var hoverOn = function () {
-            $(domElement).css("background-color", "#daeac6");
-            changeLabelSize(domElement, 16, 100);
-        };
-        var hoverOff = function () {
-            $(domElement).css("background-color", "#ffffff");
-            changeLabelSize(domElement, 12, 100);
-         };
+    function hoverOff(domElement) {
+        $(domElement).css("background-color", "#ffffff");
+        changeLabelSize(domElement, 12, 100);
+     }
+
+    function addLayerMouseOver(layer) {
+        // Show the layers in the sidebar when they get hovered over
+        var label = layer.label;
+        var domElement = layer._arcDomElement;
 
         // Have to do it for the label and the polgon layer (because leaflet)
-        $(labelElement).on("mouseover", function() { hoverOn();}); // Doesn't work!
-        $(domElement).on("mouseover", function() { hoverOn(); });
-        layer.on("mouseover", function(e) { hoverOn(); });
+        $(domElement).on("mouseover", function() { hoverOn(domElement); });
+        layer.on("mouseover", function(e) { hoverOn(domElement); });
 
-        $(labelElement).on("mouseout", function() { hoverOff(); });
-        $(domElement).on("mouseout",  function() { hoverOff(); });
-        layer.on("mouseout", function(e) { hoverOff(); });
+        $(domElement).on("mouseout",  function() { hoverOff(domElement); });
+        layer.on("mouseout", function(e) { hoverOff(domElement); });
     }
 
     $(document).on("click", ".ar-carbon-save-description", function() {
@@ -398,7 +391,7 @@ jQuery(document).ready(function($) {
         var duplicate = false;
         drawnItems.eachLayer(function(layer){
             if (isPolygon(layer)) { // Make sure its just polygons
-                if (title.trim() === layer._arcFieldTitle) { // if title matches (duplicate title)
+                if (title.trim().toLowerCase() === layer._arcFieldTitle.toLowerCase() ) { // if title matches (duplicate title)
                     duplicate = true;
                 }
             }
@@ -411,14 +404,17 @@ jQuery(document).ready(function($) {
 
     function setLabel(layer, text) {
         // Set the label name
+        var domElement = layer._arcDomElement;
         layer.label = L.marker(getCentroid(layer._latlngs), {
             icon: L.divIcon({
                 className: 'field-div-icon',
                 html: String(text),
                 iconSize: [100, 30]
             })
-        }).addTo(map);
-        addLayerClickModal(layer); // We need to make sure something happens onclick
+        }).addTo(map)
+        .on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
+        .on("mouseout", function() { hoverOff(domElement);})
+        .on("click", function(){ populateFieldTextModal(layer); });
     }
 
     function getLabel(layer) {
@@ -506,7 +502,7 @@ jQuery(document).ready(function($) {
         }
         catch(e) {
             $("#geojson-error").openModal(modalOptions);
-            debug("Something went wrong processing GeoJSON: ", e);
+            console.debug("Something went wrong processing GeoJSON: ", e);
         }
     }
 
@@ -568,7 +564,6 @@ jQuery(document).ready(function($) {
         });
         return inter;
     }
-
 
     function isPoint(layer) {
         return (layer.hasOwnProperty("_latlng") === true);

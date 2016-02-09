@@ -1,6 +1,13 @@
 jQuery(document).ready(function($) {
     $( document ).on( 'click', '.ar-map-submit-confirm', function() {
 
+        window.console = window.console || {
+            log: function () {},
+            error: function () {},
+            debug: function () {},
+            warn: function () {}
+        };
+
         var modalOptions = {
                 dismissible: false,
                 opacity: 0.5,
@@ -27,15 +34,15 @@ jQuery(document).ready(function($) {
 
         // Check that the data is no undefined etc
         if (data && checkData(data)) {
-            console.log("Valid: ", data);
+            console.debug("Valid: ", data);
         	$.ajax({
         		url: url,
                 type : 'post',
                 data : data
             })
             .done(function() {
-                console.log("Data posted");
-    			console.log(data);
+                console.debug("Data posted");
+    			console.debug(data);
                 button.prop('disabled',false); // Undo the button disabling
                 $('#submit').openModal();
                 // Give user feedback;
