@@ -14,10 +14,11 @@ jQuery(document).ready(function($) {
     if (localStorage && localStorage.getItem("arc-debug")) {
         DEVELOPMENT = true;
     }
-    var debug = function(msg) {
-        if (typeof console !== "undefined") { // console is not universal
-            console.debug(msg);
-        }
+    window.console = window.console || {
+        log: function () {},
+        error: function () {},
+        debug: function () {},
+        warn: function () {}
     };
 
     // Initialisation
@@ -294,7 +295,6 @@ jQuery(document).ready(function($) {
         // Show the layers in the sidebar when they get hovered over
         var label = layer.label;
         var domElement = layer._arcDomElement;
-        debug(label);
 
         // Have to do it for the label and the polgon layer (because leaflet)
         $(domElement).on("mouseover", function() { hoverOn(domElement); });
@@ -413,7 +413,7 @@ jQuery(document).ready(function($) {
             })
         }).addTo(map)
         .on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
-        .on("mouseout", function() { hoverOn(domElement);})
+        .on("mouseout", function() { hoverOff(domElement);})
         .on("click", function(){ populateFieldTextModal(layer); });
     }
 
@@ -502,7 +502,7 @@ jQuery(document).ready(function($) {
         }
         catch(e) {
             $("#geojson-error").openModal(modalOptions);
-            debug("Something went wrong processing GeoJSON: ", e);
+            console.debug("Something went wrong processing GeoJSON: ", e);
         }
     }
 

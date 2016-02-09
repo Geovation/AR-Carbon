@@ -1087,7 +1087,7 @@ L.Edit.Marker = L.Handler.extend({
 		if (!this._icon) {
 			return;
 		}
-		
+
 		// This is quite naughty, but I don't see another way of doing it. (short of setting a new icon)
 		var icon = this._icon;
 
@@ -1297,7 +1297,7 @@ L.Edit.Poly = L.Handler.extend({
 				this._onMarkerClick(e); // Reset the marker to it's original position
 			}
 		}
-		
+
 		this._poly.redraw();
 	},
 
@@ -2823,9 +2823,7 @@ L.EditToolbar.Edit = L.Handler.extend({
 
 		// Back up this layer (if haven't before)
 		this._backupLayer(layer);
-
-		console.log(this._tooltip, this.tooltip, layer);
-
+		
 		if (this.options.poly) {
 			poly = L.Util.extend({}, this.options.poly);
 			layer.options.poly = poly;
