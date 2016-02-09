@@ -7,7 +7,11 @@ jQuery(document).ready(function($) {
     // _arcFieldTitle
     // _arcFieldDescription
 
-    var DEVELOPMENT = true;
+    // Development environment
+    var DEVELOPMENT = false;
+    if (location.href.indexOf("localhost") > -1) {
+        DEVELOPMENT = true;
+    }
 
     // Initialisation
     var boundingBox = L.latLngBounds(
@@ -24,8 +28,8 @@ jQuery(document).ready(function($) {
         totalHectares = 0.0,
         userFarm,
         deleting = false,
-        currentLayer,
-        boundaryNumber = 1;
+        currentLayer;
+
 
     var enableDraw = {
         polyline  : false,
@@ -41,6 +45,7 @@ jQuery(document).ready(function($) {
             weight: 12
         }
     };
+
     var enableEdit = {
         featureGroup: drawnItems,
         poly : {
@@ -48,9 +53,16 @@ jQuery(document).ready(function($) {
         }
     };
 
+    var modalOptions = {
+            dismissible: false,
+            opacity: 0.5,
+            in_duration: 350,
+            out_duration: 250,
+            ready: undefined,
+            complete: undefined,
+     };
 
-    if (!DEVELOPMENT && USER_GEOJSON) {
-        $(".ar-map-submit").prop('disabled',true);
+    if (USER_GEOJSON && !DEVELOPMENT) {
         enableDraw = false;
         enableEdit = false;
     }
@@ -76,10 +88,13 @@ jQuery(document).ready(function($) {
       }) }
     }).addTo(map);
 
-
+    // If they have previous outlines, reinstatiate those
     if (USER_GEOJSON) {
         reinstantiateData(USER_GEOJSON);
     }
+
+    // Check if they can submit
+    checkCanSubmit();
 
     // EVENT HANDLERS
     // Lets handle all of the many events that we will get from users
@@ -88,8 +103,6 @@ jQuery(document).ready(function($) {
         // For all created layers
         var layer = event.layer;
         handleCreate(layer, false); // reinstantiate is false as we don't want to do that
-
-
     });
 
     function handleCreate(layer, reinstantiate) {
@@ -109,12 +122,12 @@ jQuery(document).ready(function($) {
             fieldTitle = layer._arcFieldTitle || "";
 
             var _arcDomElement =
-                $('<div class="mat-row ar-map-plot">'+
-                    '<div class="mat-col mat-s12 ar-map-plot-title-holder">'+
-                        '<b class="ar-map-plot-title mat-s12">' + fieldTitle + '</b>'+
+                $('<div class="row ar-map-plot">'+
+                    '<div class="col s12 ar-map-plot-title-holder">'+
+                        '<b class="ar-map-plot-title s12">' + fieldTitle + '</b>'+
                     '</div>'+
-                    '<div class="mat-col mat-s6"> Hectares </div>'+
-                    '<div class="mat-col mat-s6 hectares">'+area.toFixed(2)+'</div>'+
+                    '<div class="col s6"> Hectares </div>'+
+                    '<div class="col s6 hectares">'+area.toFixed(2)+'</div>'+
                   '</div>');
             $(".ar-map-plots").append(_arcDomElement);
             layer._arcDomElement = _arcDomElement[0];
@@ -132,7 +145,7 @@ jQuery(document).ready(function($) {
             updateTotalArea();
 
             // Add a click listner for the modal so when it gets clicked in the map it opens
-            addLayerClickModal(layer);
+            //addLayerClickModal(layer);
 
             if (!reinstantiate) {
                 populateFieldTextModal(layer);
@@ -151,6 +164,7 @@ jQuery(document).ready(function($) {
             // map.remove(layer);
         }
 
+        checkCanSubmit();
         updatePostData(); // Make sure we update post data!
     }
 
@@ -197,7 +211,10 @@ jQuery(document).ready(function($) {
         });
         updateTotalArea();
         checkTotalHectares(totalHectares, true);
+        updatePostData();
+        checkCanSubmit();
         deleting = false;
+
     });
 
     map.on('draw:deletestart', function (event) {
@@ -207,12 +224,6 @@ jQuery(document).ready(function($) {
         $(".field-div-icon").hide();
     });
     map.on('draw:editstop', function (event) {
-        $(".field-div-icon").show();
-    });
-    map.on('draw:deletestart', function (event) {
-        $(".field-div-icon").hide();
-    });
-    map.on('draw:deletestop', function (event) {
         $(".field-div-icon").show();
     });
 
@@ -238,15 +249,13 @@ jQuery(document).ready(function($) {
 
     $(document).on("click", ".ar-map-submit", function() {
         if (totalHectares < 50.0) {
-            $("#confirm-submit").openModal();
+            $("#confirm-submit").openModal(modalOptions);
         }
         else {
-            $("#overfifty").openModal();
+            $("#overfifty").openModal(modalOptions);
         }
 
     });
-
-    //$(document).on("click", ar-over-fifty-ok
 
     function changeLabelSize(domElement, size, width) {
         // Change the label size
@@ -258,18 +267,41 @@ jQuery(document).ready(function($) {
 
     function addLayerClickModal(layer) {
 
+        // Disable layer modals
+        layer.off("click");
+        if (layer.label) {
+            $(layer.label._icon).unbind("click");
+        }
+
         // On click on either the polygon or the label -- ugly but necessary
         layer.on("click", function (e) {
             populateFieldTextModal(layer);
         });
 
-        if (layer.label._icon) {
-            $(layer.label._icon).unbind('click');
+        if (layer.label) {
+            $(layer.label._icon).on("click", function(){
+                populateFieldTextModal(layer);
+            });
         }
 
-        $(layer.label._icon).on("click", function(){
-            console.log("label click");
-            populateFieldTextModal(layer);
+    }
+
+    function addAllClickModals() {
+        drawnItems.eachLayer(function(layer) {
+            if (isPolygon(layer)){
+                addLayerClickModal(layer);
+            }
+        });
+    }
+
+    function removeAllClickModals(workingLayer) {
+        drawnItems.eachLayer(function(layer) {
+            if (isPolygon(layer)) {
+                if (layer.label) {
+                    $(layer.label._icon).unbind('click');
+                }
+                layer.off("click");
+            }
         });
     }
 
@@ -298,8 +330,6 @@ jQuery(document).ready(function($) {
     $(document).on("click", ".ar-carbon-save-description", function() {
         // Save the description to the layer when the user clicks save
 
-
-
         var title = $("#field-title").val().trim();
         var description = $("#field-description").val().trim();
 
@@ -311,13 +341,34 @@ jQuery(document).ready(function($) {
         $("#field-title").val("");
         $("#field-description").val("");
         updatePostData();
+
+        // Renable the user interactions
         $(".ar-map-submit").prop('disabled',false);
+        addAllClickModals();
 
         // If we didn't gove over the 50 ha limit then we can label it
         checkTotalHectares(totalHectares, true);
 
 
     });
+
+
+    function checkCanSubmit(){
+        // If no layers OR they have previously submitted
+        if (!drawnItems.getLayers().length || (USER_GEOJSON && !DEVELOPMENT) ) {
+            disableSubmit();
+        }
+        else if (drawnItems.getLayers().length) {
+            enableSubmit();
+        }
+    }
+
+    function disableSubmit() {
+        $(".ar-map-submit").prop('disabled', true);
+    }
+    function enableSubmit() {
+        $(".ar-map-submit").prop('disabled', false);
+    }
 
     // Handling user input for the field title
     $("#field-title").keyup(function(e) {
@@ -329,16 +380,19 @@ jQuery(document).ready(function($) {
 
     function handleTitle(context, focus) {
         // We want to prevent users from having blank or duplicate titles!
+        var m;
         var title = $(context).val();
         if ((!focus && duplicateTitles(title)) || title === "") {
+            m = "Blank or duplicate field name! Field names must be none blank and unique!";
             $(".ar-carbon-save-description").css("visibility", "hidden");
             $(".field-title-label").css("color", "#FF7272");
-            $(".field-title-label").text("Blank or duplicate field name! Field names must be none blank and unique!");
+            $(".field-title-label").text(m);
         }
         else {
+            m = "Give this area an identifier (a name or a Field Parcel Number)";
             $(".ar-carbon-save-description").css("visibility", "visible");
             $(".field-title-label").css("color", "#9e9e9e");
-            $(".field-title-label").text("Give this area an identifier (a name or a Field Parcel Number)");
+            $(".field-title-label").text(m);
         }
     }
 
@@ -356,26 +410,13 @@ jQuery(document).ready(function($) {
         return returnLayer;
     }
 
-    function getLayerCount(layers) {
-        // Returns the number of layers
-        var count = 0;
-        var layer;
-
-        for (layer in layers) {
-            if (layers.hasOwnProperty(layer)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     function duplicateTitles(title) {
         var duplicate = false;
         drawnItems.eachLayer(function(layer){
             if (isPolygon(layer)) { // Make sure its just polygons
-                console.log("check layer dupe", layer);
-                if (title === layer._arcFieldTitle) { // if title matches (duplicate title)
-                    console.log("duplicate");
+                //console.log("check layer dupe", layer);
+                if (title.trim() === layer._arcFieldTitle) { // if title matches (duplicate title)
+                    //console.log("duplicate");
                     duplicate = true;
                 }
             }
@@ -414,7 +455,7 @@ jQuery(document).ready(function($) {
 
     function populateFieldTextModal(layer) {
         // Populate the modal for the layer
-        console.log(layer);
+        //console.log(layer);
         if (!deleting) {
 
             var title = layer._arcFieldTitle || "";
@@ -423,10 +464,14 @@ jQuery(document).ready(function($) {
             currentLayer = layer;
             $("#field-title").val(title);
             $("#field-description").val(description);
-            $("#field-text-edit").openModal();
+            $("#field-text-edit").openModal(modalOptions);
+
+            // Prevent the user from interacting
             $(".ar-map-submit").prop('disabled',true);
+            removeAllClickModals(layer);
+
             $("#field-title").focus();
-            $(".field-description-active").addClass("mat-active");
+            $(".field-description-active").addClass("active");
 
         }
     }
@@ -442,7 +487,7 @@ jQuery(document).ready(function($) {
             layerjson.properties.area = layer._arcArea;
             layerjson.properties.title = layer._arcFieldTitle;
             layerjson.properties.description = layer._arcFieldDescription;
-            console.log(layerjson);
+            //console.log(layerjson);
             geojson.features.push(layerjson);
         });
         geojsonstr = JSON.stringify(geojson);
@@ -452,34 +497,37 @@ jQuery(document).ready(function($) {
     function reinstantiateData(geojson) {
 
         // Get the geojson from the WP database and then add it to drawnLayers
-        geojson = JSON.parse(geojson);
-        if (geojson && geojson.features) {
-            L.geoJson(geojson, {
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties) {
-                        layer._arcArea = feature.properties.area;
-                        layer._arcFieldTitle = feature.properties.title;
-                        layer._arcFieldDescription = feature.properties.description;
+        try {
+            geojson = JSON.parse(geojson);
+            if (geojson && geojson.features) {
+                L.geoJson(geojson, {
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties) {
+                            layer._arcArea = feature.properties.area;
+                            layer._arcFieldTitle = feature.properties.title;
+                            layer._arcFieldDescription = feature.properties.description;
+                        }
+                        if (feature.type == "Point") {
+                            layer._arcIsFarmHome = true;
+                        }
                     }
-                    if (feature.type == "Point") {
-                        layer._arcIsFarmHome = true;
-                    }
-                }
-            }).eachLayer(function(layer){
-                drawnItems.addLayer(layer);
+                }).eachLayer(function(layer){
+                    drawnItems.addLayer(layer);
 
-                if (layer._arcIsFarmHome) {
-                    userFarm = layer;
-                }
-                else {
-                    handleCreate(layer, true);
-                }
-            });
+                    if (layer._arcIsFarmHome) {
+                        userFarm = layer;
+                    }
+                    else {
+                        handleCreate(layer, true);
+                    }
+                });
+            }
+            map.fitBounds(drawnItems.getBounds());
         }
-
-        //console.log($(".field-description-active"));
-        map.fitBounds(drawnItems.getBounds());
-
+        catch(e) {
+            $("#geojson-error").openModal(modalOptions);
+            console.log("Something went wrong processing GeoJSON: ", e);
+        }
     }
 
     function updateTotalArea() {
@@ -487,7 +535,7 @@ jQuery(document).ready(function($) {
         var area = 0.0;
         totalHectares = 0.0;
 
-        if (getLayerCount(drawnItems)) {
+        if (drawnItems.getLayers().length) {
             drawnItems.eachLayer(function(layer) {
                 if (isPolygon(layer)) {
                     totalHectares += layer._arcArea;
@@ -507,7 +555,7 @@ jQuery(document).ready(function($) {
             $(".leaflet-draw-draw-polygon").hide();
             $(".ar-map-submit").prop('disabled',true);
             if (openModal) {
-                $('#overfifty').openModal();
+                $('#overfifty').openModal(modalOptions);
             }
         }
         else {
@@ -532,12 +580,13 @@ jQuery(document).ready(function($) {
 
         var inter = false;
         drawnItems.eachLayer( function(layer2) {
-            console.log(layer1, layer2);
-            if (layer1._leaflet_id !== layer2._leaflet_id) { // If they're not the same geometry
+
+            //console.log(layer1, layer2);
+            if ( (layer1._leaflet_id !== layer2._leaflet_id) && isPolygon(layer2)) { // If they're not the same geometry
                 if (turf.intersect(layer1.toGeoJSON(), layer2.toGeoJSON())) {
                     inter = true;
                     map.removeLayer(layer1);
-                    $('#intersects').openModal();
+                    $('#intersects').openModal(modalOptions);
                 }
             }
         });
@@ -552,7 +601,7 @@ jQuery(document).ready(function($) {
         return (layer.hasOwnProperty("_latlngs") === true);
     }
     function userFarmUndefined() {
-        return  userFarm === undefined;
+        return userFarm === undefined;
     }
 
     function getCentroid(arr) {

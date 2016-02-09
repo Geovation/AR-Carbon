@@ -1,9 +1,18 @@
 jQuery(document).ready(function($) {
     $( document ).on( 'click', '.ar-map-submit-confirm', function() {
 
+        var modalOptions = {
+                dismissible: false,
+                opacity: 0.5,
+                in_duration: 350,
+                out_duration: 250,
+                ready: undefined,
+                complete: undefined,
+         };
+
+
         var button  = $(".ar-map-submit");
         var geojson = button.attr("data-geojson");
-        console.log(geojson);
         var url     = update.ajax_url;
         var user_id = update.user_id;
 
@@ -22,20 +31,23 @@ jQuery(document).ready(function($) {
         	$.ajax({
         		url: url,
                 type : 'post',
-                data : data,
-        		success: function( data ) {
-                    console.log("Data posted");
-        			console.log(data);
-                    button.prop('disabled',false); // Undo the button disabling
-                    $('#submit').openModal();
-                    // Give user feedback;
-        		}
-        	});
+                data : data
+            })
+            .done(function() {
+                console.log("Data posted");
+    			console.log(data);
+                button.prop('disabled',false); // Undo the button disabling
+                $('#submit').openModal();
+                // Give user feedback;
+    		})
+            .fail(function() {
+              $('#submit-error').openModal(modalOptions);
+              button.prop('disabled',false); // Undo the button disabling
+            });
         }
         else {
-            console.log("Invalid: ", data);
+             $('#submit-error').openModal(modalOptions); // Show an error messag
             button.prop('disabled',false); // Undo the button disabling
-            // Somefallback
         }
 
         // Prevent being taken to another page - this is important!
