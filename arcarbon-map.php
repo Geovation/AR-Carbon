@@ -35,7 +35,7 @@ function run_arcarbon_map() {
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts' );
 	function enqueue_scripts() {
 		$user_id = get_current_user_id();
-		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.js', __FILE__ ),  array( 'jquery' ));
+		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.new.js', __FILE__ ),  array( 'jquery' ));
 		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
@@ -88,126 +88,149 @@ function run_arcarbon_map() {
 			?>
 
 			<script type="text/javascript">
-
    				var USER_GEOJSON = '<?php echo get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true); ?>'
 			</script>
+
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.new.css" ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.css" ?>">
+
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet-geocoder-mapzen.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">
 
-			<div class="mat-row ar-map-full ar-map-container">
-			    <div class="mat-col mat-s3 ar-map-full">
+			<div class="row ar-map-full ar-map-container">
+			    <div class="col s3 ar-map-full">
 			        <div>
-			            <div class="mat-row">
-			                <div class="mat-col mat-s12">
+			            <div class="row">
+			                <div class="col s12">
 			                    <h6> Welcome back </h6>
 			                    <h5> <?php echo $current_user->user_firstname; echo $current_user->user_lastname; ?> </h5>
 			                </div>
 			            </div>
 
-			            <div class="mat-divider"></div>
+			            <div class="divider"></div>
 
-			            <div class="mat-row ar-map-total ar-map-pad-top ar-map-unmargin-bot-row ">
+			            <div class="row ar-map-total ar-map-pad-top ar-map-unmargin-bot-row ">
 
-			                <div class="mat-col mat-s6">
+			                <div class="col s6">
 			                    <h6> Total Hectares</h6>
 			                </div>
 
-			                <div class="mat-col mat-s6" id="area-value"> </div>
+			                <div class="col s6" id="area-value"> </div>
 
 			            </div>
 
-			            <div class="mat-divider"></div>
+			            <div class="divider"></div>
 			        </div>
-			        <div class="mat-row ar-map-pad-top ar-map-plots-holder">
-			            <div class="mat-col mat-s12 ar-map-plots">
+			        <div class="row ar-map-pad-top ar-map-plots-holder">
+			            <div class="col s12 ar-map-plots">
 			                <!-- Fields go here -->
 			            </div>
 			        </div>
-			        <div class="mat-row ar-map-submit-holder">
-			            <button class="ar-map-submit ar-map-dark-green mat-btn mat-waves-effect mat-waves-light" type="submit" name="action" autofocus=""
+			        <div class="row ar-map-submit-holder">
+			            <button class="ar-map-submit ar-map-dark-green btn waves-effect waves-light" type="submit" name="action" autofocus=""
 							href="<?php echo admin_url( 'admin-ajax.php?action=arcarbon_map_update' ) ?>"
 							data-geojson="<?php handleGeojson(get_user_meta(get_current_user_id(), "arcabon-map-geojson", true)); ?>" >
 							Submit
-			                <i class="material-icons mat-right">send</i>
+			                <i class="material-icons right">send</i>
 			            </button>
 			        </div>
 			    </div>
-			    <div class="mat-col mat-s9 ar-map-full" >
+			    <div class="col s9 ar-map-full" >
 
 			        <div id="arcarbon-map" class="ar-map-full"></div>
 
 			    </div>
 
 				<!-- Intersects Modal Structure -->
-				<div id="intersects" class="mat-modal">
-				  <div class="mat-modal-content">
+				<div id="intersects" class="modal">
+				  <div class="modal-content">
 					<h4>Your fields can not overlap!</h4>
 					<p>Please review your selections and make sure that it does not overlap with your current selected areas.</p>
 				  </div>
-				  <div class="mat-modal-footer">
-					<a href="#!" class=" mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Ok, got it</a>
+				  <div class="modal-footer">
+					<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Ok, got it</a>
 				  </div>
 				</div>
 
 				<!-- Over 50 Hectares Modal Modal Structure -->
-				<div id="overfifty" class="mat-modal">
-				  <div class="mat-modal-content">
+				<div id="overfifty" class="modal">
+				  <div class="modal-content">
 					<h4>Your total hectares has exceeded 50!</h4>
 					<p>Please review your drawings to stay within the limit. If you want to add any information to this field, please click on it's boundary.</p>
 				  </div>
-				  <div class="mat-modal-footer">
-					<a href="#!" class="ar-over-fifty-ok mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Ok, got it</a>
+				  <div class="modal-footer">
+					<a href="#!" class="ar-over-fifty-ok modal-action modal-close waves-effect waves-green btn-flat">Ok, got it</a>
 				  </div>
 				</div>
 
 				<!-- Submit button succesful Modal Structure -->
-			  <div id="submit" class="mat-modal">
-			    <div class="mat-modal-content">
+			  <div id="submit" class="modal">
+			    <div class="modal-content">
 			      <h4>Your new plots have been submitted</h4>
 			      <p>Thank you for your submission</p>
 			    </div>
-			    <div class="mat-modal-footer">
-			      <a href="#!" class=" mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Ok, got it</a>
+			    <div class="modal-footer">
+			      <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Ok, got it</a>
 			    </div>
 			  </div>
 
 			  <!-- Submit button confirm Modal Structure -->
-			<div id="confirm-submit" class="mat-modal">
-			  <div class="mat-modal-content">
+			<div id="confirm-submit" class="modal">
+			  <div class="modal-content">
 				<h4>Once you have submitted you can not change your drawings</h4>
 				<p>Are you sure that you want to confirm these drawings? Upon submission they can not be changed.</p>
 			  </div>
-			  <div class="mat-modal-footer">
-				<a href="#!" class=" mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">I want to change something</a>
-				<a href="#!" class=" ar-map-submit-confirm mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Confirm</a>
+			  <div class="modal-footer">
+				<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I want to change something</a>
+				<a href="#!" class=" ar-map-submit-confirm modal-action modal-close waves-effect waves-green btn-flat">Confirm</a>
 			  </div>
 			</div>
 
+		   <!-- Submit button confirm Modal Structure -->
+		   <div id="submit-error" class="modal">
+			<div class="modal-content">
+			  <h4>Something appears to has gone wrong</h4>
+			  <p>It look like something has gone wrong. It may have been a network error, so please try again.</p>
+			</div>
+			<div class="modal-footer">
+			  <a href="#!" class="modal-close waves-effect waves-green btn-flat">Ok, got it</a>
+			</div>
+		   </div>
+
+		   <!-- Submit button confirm Modal Structure -->
+		   <div id="geojson-error" class="modal">
+			<div class="modal-content">
+			  <h4>Something appears to has gone wrong</h4>
+			  <p>It looks like some boundary data has corrupted. Please contact your AR Carbon point of contact. </p>
+			</div>
+			<div class="modal-footer">
+			  <a href="#!" class="modal-close waves-effect waves-green btn-flat">Ok, got it</a>
+			</div>
+		   </div>
+
 			  <!-- Add farmer information Modal Structure -->
-		     <div id="field-text-edit" class="mat-modal">
-				 <div class="mat-modal-content">
+		     <div id="field-text-edit" class="modal" data-keyboard="false">
+				 <div class="modal-content">
 	  				 <h4>Tell us a little about this plot...</h4>
 					 <br>
-					 <div class="mat-input-field mat-col mat-s12">
-						 <i class="material-icons mat-prefix">mode_edit</i>
-						 <input placeholder="Give this a title!" id="field-title" type="text" class="mat-validate">
+					 <div class="input-field col s12">
+						 <i class="material-icons prefix">mode_edit</i>
+						 <input placeholder="Give this a title!" id="field-title" type="text" class="validate">
 	   		 			 <label class="field-title-label" for="field-title">Give this area an identifier (a name or a Field Parcel Number)</label>
 					</div>
-					<div class="mat-input-field mat-col mat-s12">
-						 <i class="material-icons mat-prefix">mode_edit</i>
-						 <textarea id="field-description" class="mat-materialize-textarea"></textarea>
-						 <label class="mat-active field-description-active" for="field-description">Please give an indication of field use</label>
+					<div class="input-field col s12">
+						 <i class="material-icons prefix">mode_edit</i>
+						 <textarea id="field-description" class="materialize-textarea"></textarea>
+						 <label class="active field-description-active" for="field-description">Please give an indication of field use</label>
 				    </div>
   			   </div>
-  			   <div class="mat-modal-footer">
-				   <div class="mat-row ar-button-holder">
-	  				   <a href="#!" class="ar-carbon-save-description mat-modal-action mat-modal-close mat-waves-effect mat-waves-green mat-btn-flat">Save Info</a>
+  			   <div class="modal-footer">
+				   <div class="row ar-button-holder">
+	  				   <a href="#!" class="ar-carbon-save-description modal-action modal-close waves-effect waves-green btn-flat">Save Info</a>
 				   </div>
   			   </div>
 		     </div>
