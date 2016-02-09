@@ -413,7 +413,6 @@ jQuery(document).ready(function($) {
             })
         }).addTo(map)
         .on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
-        .on("mouseout", function() { hoverOff(domElement);})
         .on("click", function(){ populateFieldTextModal(layer); });
     }
 
