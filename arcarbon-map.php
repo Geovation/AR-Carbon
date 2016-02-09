@@ -35,7 +35,7 @@ function run_arcarbon_map() {
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts' );
 	function enqueue_scripts() {
 		$user_id = get_current_user_id();
-		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.new.js', __FILE__ ),  array( 'jquery' ));
+		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ),  array( 'jquery' ));
 		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
@@ -93,10 +93,9 @@ function run_arcarbon_map() {
 
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.new.css" ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
-
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet-geocoder-mapzen.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">

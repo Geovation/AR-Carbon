@@ -1,6 +1,8 @@
 
 jQuery(document).ready(function($) {
 
+
+
     // Custom layer properties
     // _arcArea
     // _arcDomElement
@@ -9,9 +11,14 @@ jQuery(document).ready(function($) {
 
     // Development environment
     var DEVELOPMENT = false;
-    if (location.href.indexOf("localhost") > -1) {
+    if (localStorage && localStorage.getItem("arc-debug")) {
         DEVELOPMENT = true;
     }
+    var debug = function(msg) {
+        if (typeof console !== "undefined") { // console is not universal
+            console.debug(msg);
+        }
+    };
 
     // Initialisation
     var boundingBox = L.latLngBounds(
@@ -28,53 +35,52 @@ jQuery(document).ready(function($) {
         totalHectares = 0.0,
         userFarm,
         deleting = false,
-        currentLayer;
-
-
-    var enableDraw = {
-        polyline  : false,
-        circle    : false,
-        rectangle : false,
-        marker    : true,
-        polygon  : {
-            allowIntersection: false,
-            drawError: {
-               color: '#e1e100', // Color the shape will turn when intersects
-               message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
-            },
-            weight: 12
-        }
-    };
-
-    var enableEdit = {
-        featureGroup: drawnItems,
-        poly : {
-            allowIntersection : false
-        }
-    };
-
-    var modalOptions = {
+        currentLayer,
+        enableDraw = {
+            polyline  : false,
+            circle    : false,
+            rectangle : false,
+            marker    : true,
+            polygon  : {
+                allowIntersection: false,
+                drawError: {
+                   color: '#e1e100', // Color the shape will turn when intersects
+                   message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
+                },
+                weight: 12
+            }
+        },
+        enableEdit = {
+            featureGroup: drawnItems,
+            poly : {
+                allowIntersection : false
+            }
+        },
+        modalOptions = {
             dismissible: false,
             opacity: 0.5,
             in_duration: 350,
             out_duration: 250,
             ready: undefined,
             complete: undefined,
-     };
+        };
 
     if (USER_GEOJSON && !DEVELOPMENT) {
         enableDraw = false;
         enableEdit = false;
     }
 
-    // Leaflet Control Setup
+    // Leaflet Draw Control Setup
     var controls = new L.Control.Draw({
         draw : enableDraw,
         edit : enableEdit
     });
-
     map.addControl(controls);
+
+    // Locate User Control
     L.control.locate({icon: 'fa fa-location-arrow'}).addTo(map);
+
+    // Geocoder Control
     L.control.geocoder("search-sWC5vE4", {
       position: 'topright',
       expanded: true,
@@ -266,50 +272,27 @@ jQuery(document).ready(function($) {
     }
 
     function addLayerClickModal(layer) {
-
+        var label = $(layer.label._icon);
         // Disable layer modals
-        layer.off("click");
-        if (layer.label) {
-            $(layer.label._icon).unbind("click");
-        }
 
-        // On click on either the polygon or the label -- ugly but necessary
+        // On click on either the polygon or the label -- ugly but necessary as label overlays layer
         layer.on("click", function (e) {
             populateFieldTextModal(layer);
         });
 
-        if (layer.label) {
-            $(layer.label._icon).on("click", function(){
+        if (label.length) {
+            label.on("click", function(){
                 populateFieldTextModal(layer);
             });
         }
 
     }
 
-    function addAllClickModals() {
-        drawnItems.eachLayer(function(layer) {
-            if (isPolygon(layer)){
-                addLayerClickModal(layer);
-            }
-        });
-    }
-
-    function removeAllClickModals(workingLayer) {
-        drawnItems.eachLayer(function(layer) {
-            if (isPolygon(layer)) {
-                if (layer.label) {
-                    $(layer.label._icon).unbind('click');
-                }
-                layer.off("click");
-            }
-        });
-    }
-
     function addMouseOver(layer, domElement) {
         // Show the layers in the sidebar when they get hovered over
         var labelElement = layer.label._icon;
 
-        var hoverOn = function (toast) {
+        var hoverOn = function () {
             $(domElement).css("background-color", "#daeac6");
             changeLabelSize(domElement, 16, 100);
         };
@@ -319,11 +302,12 @@ jQuery(document).ready(function($) {
          };
 
         // Have to do it for the label and the polgon layer (because leaflet)
-        $(labelElement).mouseover(function() { hoverOn(); });
-        $(domElement).mouseover(function() { hoverOn(); });
-        $(labelElement).mouseout(function() { hoverOff(); });
-        $(domElement).mouseout(function() { hoverOff(); });
-        layer.on("mouseover", function(e) { hoverOn(true); });
+        $(labelElement).on("mouseover", function() { hoverOn();}); // Doesn't work!
+        $(domElement).on("mouseover", function() { hoverOn(); });
+        layer.on("mouseover", function(e) { hoverOn(); });
+
+        $(labelElement).on("mouseout", function() { hoverOff(); });
+        $(domElement).on("mouseout",  function() { hoverOff(); });
         layer.on("mouseout", function(e) { hoverOff(); });
     }
 
@@ -344,7 +328,7 @@ jQuery(document).ready(function($) {
 
         // Renable the user interactions
         $(".ar-map-submit").prop('disabled',false);
-        addAllClickModals();
+        //addAllClickModals();
 
         // If we didn't gove over the 50 ha limit then we can label it
         checkTotalHectares(totalHectares, true);
@@ -380,19 +364,19 @@ jQuery(document).ready(function($) {
 
     function handleTitle(context, focus) {
         // We want to prevent users from having blank or duplicate titles!
-        var m;
+        var msg;
         var title = $(context).val();
         if ((!focus && duplicateTitles(title)) || title === "") {
-            m = "Blank or duplicate field name! Field names must be none blank and unique!";
+            msg = "Blank or duplicate field name! Field names must be none blank and unique!";
             $(".ar-carbon-save-description").css("visibility", "hidden");
             $(".field-title-label").css("color", "#FF7272");
-            $(".field-title-label").text(m);
+            $(".field-title-label").text(msg);
         }
         else {
-            m = "Give this area an identifier (a name or a Field Parcel Number)";
+            msg = "Give this area an identifier (a name or a Field Parcel Number)";
             $(".ar-carbon-save-description").css("visibility", "visible");
             $(".field-title-label").css("color", "#9e9e9e");
-            $(".field-title-label").text(m);
+            $(".field-title-label").text(msg);
         }
     }
 
@@ -414,9 +398,7 @@ jQuery(document).ready(function($) {
         var duplicate = false;
         drawnItems.eachLayer(function(layer){
             if (isPolygon(layer)) { // Make sure its just polygons
-                //console.log("check layer dupe", layer);
                 if (title.trim() === layer._arcFieldTitle) { // if title matches (duplicate title)
-                    //console.log("duplicate");
                     duplicate = true;
                 }
             }
@@ -436,7 +418,6 @@ jQuery(document).ready(function($) {
                 iconSize: [100, 30]
             })
         }).addTo(map);
-
         addLayerClickModal(layer); // We need to make sure something happens onclick
     }
 
@@ -455,7 +436,7 @@ jQuery(document).ready(function($) {
 
     function populateFieldTextModal(layer) {
         // Populate the modal for the layer
-        //console.log(layer);
+
         if (!deleting) {
 
             var title = layer._arcFieldTitle || "";
@@ -468,7 +449,7 @@ jQuery(document).ready(function($) {
 
             // Prevent the user from interacting
             $(".ar-map-submit").prop('disabled',true);
-            removeAllClickModals(layer);
+            //removeAllClickModals(layer);
 
             $("#field-title").focus();
             $(".field-description-active").addClass("active");
@@ -487,7 +468,6 @@ jQuery(document).ready(function($) {
             layerjson.properties.area = layer._arcArea;
             layerjson.properties.title = layer._arcFieldTitle;
             layerjson.properties.description = layer._arcFieldDescription;
-            //console.log(layerjson);
             geojson.features.push(layerjson);
         });
         geojsonstr = JSON.stringify(geojson);
@@ -526,13 +506,12 @@ jQuery(document).ready(function($) {
         }
         catch(e) {
             $("#geojson-error").openModal(modalOptions);
-            console.log("Something went wrong processing GeoJSON: ", e);
+            debug("Something went wrong processing GeoJSON: ", e);
         }
     }
 
     function updateTotalArea() {
         // Update the total area
-        var area = 0.0;
         totalHectares = 0.0;
 
         if (drawnItems.getLayers().length) {
@@ -548,24 +527,23 @@ jQuery(document).ready(function($) {
 
     function checkTotalHectares(totalHectares, openModal) {
         // Check if the total hectares is over 50
-
         if (totalHectares > 50.0) {
-            $(".ar-map-total").css("background-color", "#ffc0c0");
-            $(".ar-map-total").css("color", "#ff0000");
-            $(".leaflet-draw-draw-polygon").hide();
-            $(".ar-map-submit").prop('disabled',true);
-            if (openModal) {
-                $('#overfifty').openModal(modalOptions);
-            }
+            areaOverFifty("#ffc0c0", "#ff0000", true);
         }
         else {
-            $(".ar-map-total").css("background-color", "#daeac6");
-            $(".ar-map-total").css("color", "#15693b");
-            $(".ar-map-submit").prop('disabled',false);
-            $(".leaflet-draw-draw-polygon").show();
+            areaOverFifty("#daeac6", "#15693b", false);
         }
     }
 
+    function areaOverFifty(backgroundColor, textColor, disabled) {
+        $(".ar-map-total").css("background-color", backgroundColor);
+        $(".ar-map-total").css("color", textColor);
+        $(".leaflet-draw-draw-polygon").toggle(!disabled);
+        $(".ar-map-submit").prop('disabled', disabled);
+        if (disabled) {
+            $('#overfifty').openModal(modalOptions);
+        }
+    }
 
 
     // Geometry related functions
@@ -580,8 +558,6 @@ jQuery(document).ready(function($) {
 
         var inter = false;
         drawnItems.eachLayer( function(layer2) {
-
-            //console.log(layer1, layer2);
             if ( (layer1._leaflet_id !== layer2._leaflet_id) && isPolygon(layer2)) { // If they're not the same geometry
                 if (turf.intersect(layer1.toGeoJSON(), layer2.toGeoJSON())) {
                     inter = true;

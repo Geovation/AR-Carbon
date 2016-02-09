@@ -46,7 +46,7 @@ jQuery(document).ready(function($) {
             });
         }
         else {
-             $('#submit-error').openModal(modalOptions); // Show an error messag
+            $('#submit-error').openModal(modalOptions); // Show an error messag
             button.prop('disabled',false); // Undo the button disabling
         }
 
