@@ -153,12 +153,38 @@ nav {
 }
 
 .field-div-icon {
-    /**z-index: 0; **/
+    pointer-events: none;
     text-align: center;
     vertical-align: middle;
     line-height: 37px;
     border: none;
     font-weight: bold;
-    color: black;
+    color: whitesmoke;
     background-color: rgba(1, 1, 1, 0);
+    cursor: default;/*plain arrow*/
+}
+
+/** Materialize hides the geocoder **/
+.leaflet-control-layers-list input[type="radio"] {
+     position: initial !important;
+     left: 0px !important;
+     visibility: visible !important;
+}
+
+.leaflet-control-mapbox-geocoder {
+    position: absolute;
+    margin-left: 50px !important;
+}
+
+/** Make the arrow center. **/
+.leaflet-control-locate .fa-location-arrow  {
+    padding-left: 6px;
+    padding-top: 4px;
+}
+.label-text {
+    height: 0px;
+    width: 110px;
+    padding: 0px !important;
+    margin: 0px !important;
+    cursor: default;/*plain arrow*/
 }

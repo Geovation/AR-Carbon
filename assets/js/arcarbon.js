@@ -1,6 +1,7 @@
 
 jQuery(document).ready(function($) {
 
+
     // Needed to allow for editing polygon intersection checking and preventing console error
     L.EditToolbar = L.EditToolbar.extend({
         _save: function () {
@@ -27,6 +28,8 @@ jQuery(document).ready(function($) {
     if (localStorage && localStorage.getItem("arc-debug")) {
         DEVELOPMENT = true;
     }
+
+    // Console polyfill for non supporting browsers
     window.console = window.console || {
         log: function () {},
         error: function () {},
@@ -34,16 +37,18 @@ jQuery(document).ready(function($) {
         warn: function () {}
     };
 
+    // Setup the MAPBOX API KEY
+    L.mapbox.accessToken = MAPBOX_API_KEY;
+    MAPBOX_API_KEY = "";
+
     // Initialisation
     var boundingBox = L.latLngBounds(
             L.latLng({lat: 49.62, lng:-10.7}),
             L.latLng({lat: 62.52, lng :4.11})
         ),
         center = boundingBox.getCenter(),
-        osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
-        map = new L.Map('arcarbon-map', {layers: [osm], center: center, zoom: 5}),
+        //osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
+        map = new L.mapbox.map('arcarbon-map', null, { maxZoom: 18 }).setView(center, 5),
         drawnItems = new L.FeatureGroup().addTo(map),
         saveArray = [],
         totalHectares = 0.0,
@@ -79,6 +84,16 @@ jQuery(document).ready(function($) {
             complete: undefined,
         };
 
+        var layers = {
+          Satellite: L.mapbox.tileLayer('mapbox.satellite'),
+          Streets: L.mapbox.tileLayer('mapbox.streets'),
+          Outdoors: L.mapbox.tileLayer('mapbox.outdoors')
+        };
+
+        layers.Satellite.addTo(map);
+        L.control.layers(layers).addTo(map);
+
+
     if (USER_GEOJSON && !DEVELOPMENT) {
         enableDraw = false;
         enableEdit = false;
@@ -90,23 +105,16 @@ jQuery(document).ready(function($) {
         edit : enableEdit
     });
     map.addControl(controls);
+    map.addControl(L.mapbox.geocoderControl('mapbox.places', {
+        keepOpen : false,
+        autocomplete: true,
+        position: 'topleft'
+
+    }));
+    $(".mapbox-icon-geocoder").text(""); // Removes random text in the geocoder
 
     // Locate User Control
     L.control.locate({icon: 'fa fa-location-arrow'}).addTo(map);
-
-    // Geocoder Control
-    L.control.geocoder("search-sWC5vE4", {
-      position: 'topright',
-      expanded: true,
-      bounds: boundingBox,
-      autocomplete: false,
-      markers: {
-          icon: new L.icon({
-              iconSize: [25, 41],
-              popupAnchor: [-1, -1],
-              iconUrl: '../wp-content/plugins/arcarbon-map/assets/js/images/marker-icon-locate.png'
-      }) }
-    }).addTo(map);
 
     // If they have previous outlines, reinstatiate those
     if (USER_GEOJSON) {
@@ -114,7 +122,7 @@ jQuery(document).ready(function($) {
     }
 
     // Check if they can submit
-    checkCanSubmit();
+        checkCanSubmit();
 
     // EVENT HANDLERS
     // Lets handle all of the many events that we will get from users
@@ -197,11 +205,7 @@ jQuery(document).ready(function($) {
                 // Check for intersection of the drawn polygon
                 if (checkIntersections(layer, false)) {
                     try {
-                        // oldHandler = controls._toolbars.edit._activeMode.handler;
-                        // handler = controls._toolbars.edit._activeMode.handler = {};
-                        //handler.disable = function() {};
                         controls._toolbars.edit.disable();
-                        // controls._toolbars.edit._activeMode.handler = oldHandler;
                     }
                     catch(e) {
                         // This will
@@ -233,7 +237,7 @@ jQuery(document).ready(function($) {
 
     map.on('draw:deleted', function (event) {
         // For all deleted layers
-        console.log("Delete");
+        console.log("Delete", event);
         event.layers.eachLayer(function (layer) {
             if (isPolygon(layer)) {
                 $(layer._arcDomElement).remove();
@@ -268,6 +272,7 @@ jQuery(document).ready(function($) {
         var el = this;
         drawnItems.eachLayer(function(layer){
             if (isPolygon(layer) && el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
+                  map.fitBounds(layer.getBounds());
                 populateFieldTextModal(layer);
             }
         });
@@ -294,6 +299,8 @@ jQuery(document).ready(function($) {
     });
 
     function changeLabelSize(domElement, size, width) {
+
+
         // Change the label size
         var layer = layerFromDomEl(domElement);
         if (layer) {
@@ -315,12 +322,12 @@ jQuery(document).ready(function($) {
     }
 
     function hoverOn(domElement) {
-        $(domElement).css("background-color", "#daeac6");
+        //$(domElement).css("background-color", "#daeac6");
         changeLabelSize(domElement, 16, 100);
     }
 
     function hoverOff(domElement) {
-        $(domElement).css("background-color", "#ffffff");
+        //$(domElement).css("background-color", "#ffffff");
         changeLabelSize(domElement, 12, 100);
      }
 
@@ -446,8 +453,8 @@ jQuery(document).ready(function($) {
         layer.label = L.marker(getCentroid(layer._latlngs), {
             icon: L.divIcon({
                 className: 'field-div-icon',
-                html: String(text),
-                iconSize: [100, 30]
+                html: "<p class='label-text'>"+String(text)+"</p>",
+                iconSize: [110, 1]
             })
         }).addTo(map)
         .on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
@@ -456,7 +463,7 @@ jQuery(document).ready(function($) {
 
     function getLabel(layer) {
         // Get a label DOM element from a layer
-        return $(layer.label._icon);
+        return $(layer.label._icon).find("p");
     }
 
     function removeLabel(layer) {
@@ -659,8 +666,6 @@ jQuery(document).ready(function($) {
        return container;
       }
     });
-
-
 
     // Add it to the map
     map.addControl(new homeControl());
