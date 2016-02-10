@@ -1,7 +1,20 @@
 
 jQuery(document).ready(function($) {
 
+    // Needed to allow for editing polygon intersection checking and preventing console error
+    L.EditToolbar = L.EditToolbar.extend({
+        _save: function () {
+            if (this._activeMode !== null) {
+                this._activeMode.handler.save();
+                try {
+                    this._activeMode.handler.disable();
+                }
+                catch(e) {
 
+                }
+            }
+       }
+    });
 
     // Custom layer properties
     // _arcArea
@@ -117,7 +130,7 @@ jQuery(document).ready(function($) {
 
         if (isPolygon(layer)) {
             // Check for intersection of the drawn polygon
-            if (checkIntersections(layer)) {
+            if (checkIntersections(layer, true)) {
                 return;
             }
 
@@ -171,23 +184,41 @@ jQuery(document).ready(function($) {
         updatePostData(); // Make sure we update post data!
     }
 
+    map.on('draw:editstop', function(e){
+        console.log("stop", controls);
+    });
+
     map.on('draw:edited', function (event) {
         // For all edited layers
+        console.log(event);
         event.layers.eachLayer(function (layer) {
 
             if (isPolygon(layer)) {
                 // Check for intersection of the drawn polygon
-                if (checkIntersections(layer)) {
-                    return;
+                if (checkIntersections(layer, false)) {
+                    try {
+                        // oldHandler = controls._toolbars.edit._activeMode.handler;
+                        // handler = controls._toolbars.edit._activeMode.handler = {};
+                        //handler.disable = function() {};
+                        controls._toolbars.edit.disable();
+                        // controls._toolbars.edit._activeMode.handler = oldHandler;
+                    }
+                    catch(e) {
+                        // This will
+                    }
+
+                    return; // End if it intersects
+                }
+                else {
+                    var area = getArea(layer);
+                    layer._arcArea = area;
+                    $(layer._arcDomElement).find(".hectares").text(area.toFixed(2));
+                    removeLabel(layer);
+                    setLabel(layer, layer._arcFieldTitle);
+                    updateTotalArea();
+                    checkTotalHectares(totalHectares, true);
                 }
 
-                var area = getArea(layer);
-                layer._arcArea = area;
-                $(layer._arcDomElement).find(".hectares").text(area.toFixed(2));
-                removeLabel(layer);
-                setLabel(layer, layer._arcFieldTitle);
-                updateTotalArea();
-                checkTotalHectares(totalHectares, true);
             }
             else if (isPoint) {
                 // The user has changed their farms location
@@ -202,6 +233,7 @@ jQuery(document).ready(function($) {
 
     map.on('draw:deleted', function (event) {
         // For all deleted layers
+        console.log("Delete");
         event.layers.eachLayer(function (layer) {
             if (isPolygon(layer)) {
                 $(layer._arcDomElement).remove();
@@ -229,6 +261,7 @@ jQuery(document).ready(function($) {
     map.on('draw:editstop', function (event) {
         $(".field-div-icon").show();
     });
+
 
     $(document).on("click", ".ar-map-plot", function() {
         // Modal popup for clicking on a layer in the side panel
@@ -309,10 +342,10 @@ jQuery(document).ready(function($) {
 
         var title = $("#field-title").val().trim();
         var description = $("#field-description").val().trim();
-
+        var domElement = currentLayer._arcDomElement;
         currentLayer._arcFieldTitle = title;
         currentLayer._arcFieldDescription = description;
-        $(currentLayer._arcDomElement).find(".ar-map-plot-title").text(title);
+        $(domElement).find(".ar-map-plot-title").text(title);
         removeLabel(currentLayer);
         setLabel(currentLayer, title);
         $("#field-title").val("");
@@ -320,8 +353,11 @@ jQuery(document).ready(function($) {
         updatePostData();
 
         // Renable the user interactions
-        $(".ar-map-submit").prop('disabled',false);
-        //addAllClickModals();
+        checkCanSubmit();
+
+        // Reset because modal will mean we never recieve mouseout event
+        $(domElement).css("background-color", "#ffffff");
+        changeLabelSize(domElement, 12, 100);
 
         // If we didn't gove over the 50 ha limit then we can label it
         checkTotalHectares(totalHectares, true);
@@ -352,7 +388,9 @@ jQuery(document).ready(function($) {
         handleTitle(this, false);
     });
     $("#field-title").focus(function(e) {
-        handleTitle(this, true);
+        if ($(this).val() !== "") {
+            handleTitle(this, true);
+        }
     });
 
     function handleTitle(context, focus) {
@@ -444,9 +482,10 @@ jQuery(document).ready(function($) {
 
             // Prevent the user from interacting
             $(".ar-map-submit").prop('disabled',true);
-            //removeAllClickModals(layer);
+            $(layer._arcDomElement).css("background-color", "#daeac6");
 
             $("#field-title").focus();
+            //$(".ar-carbon-save-description").css("visibility", "hidden");
             $(".field-description-active").addClass("active");
 
         }
@@ -548,7 +587,7 @@ jQuery(document).ready(function($) {
         return L.GeometryUtil.geodesicArea(layer.getLatLngs()) / 10000.0;
     }
 
-    function checkIntersections(layer1) {
+    function checkIntersections(layer1, remove) {
         // Use turf to check intersections
 
         var inter = false;
@@ -556,7 +595,9 @@ jQuery(document).ready(function($) {
             if ( (layer1._leaflet_id !== layer2._leaflet_id) && isPolygon(layer2)) { // If they're not the same geometry
                 if (turf.intersect(layer1.toGeoJSON(), layer2.toGeoJSON())) {
                     inter = true;
-                    map.removeLayer(layer1);
+                    if (remove) {
+                                map.removeLayer(layer1);
+                    }
                     $('#intersects').openModal(modalOptions);
                 }
             }
@@ -618,6 +659,8 @@ jQuery(document).ready(function($) {
        return container;
       }
     });
+
+
 
     // Add it to the map
     map.addControl(new homeControl());

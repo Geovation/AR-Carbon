@@ -2823,7 +2823,7 @@ L.EditToolbar.Edit = L.Handler.extend({
 
 		// Back up this layer (if haven't before)
 		this._backupLayer(layer);
-		
+
 		if (this.options.poly) {
 			poly = L.Util.extend({}, this.options.poly);
 			layer.options.poly = poly;
