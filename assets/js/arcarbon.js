@@ -1,4 +1,4 @@
-
+var _removeListners;
 jQuery(document).ready(function($) {
 
 
@@ -169,13 +169,13 @@ jQuery(document).ready(function($) {
             drawnItems.addLayer(layer);
 
             addLayerMouseOver(layer, layer._arcDomElement); // Add the leaflet layer mouse over / dom layer highlight effect
-            addLayerClickModal(layer); // Add a click listner for the modal so when it gets clicked in the map it opens
-            updateTotalArea();
 
             if (!reinstantiate) {
-                console.log("OPEN THAT MODAL")
+                addLayerClickModal(layer); // Add a click listner for the modal so when it gets clicked in the map it opens
                 populateFieldTextModal(layer);
             }
+
+            updateTotalArea();
 
         }
         else if (isPoint(layer) && userFarmUndefined()) {
@@ -277,8 +277,10 @@ jQuery(document).ready(function($) {
         var el = this;
         drawnItems.eachLayer(function(layer){
             if (isPolygon(layer) && el === layer._arcDomElement) { // If the dom element clicked matches the matching Leaflet layer
-                  map.fitBounds(layer.getBounds());
-                populateFieldTextModal(layer);
+                map.fitBounds(layer.getBounds());
+                if(!USER_GEOJSON) {
+                    populateFieldTextModal(layer); // Show popup on click if we're not reinstantiating
+                }
             }
         });
     });
@@ -302,6 +304,15 @@ jQuery(document).ready(function($) {
         }
 
     });
+
+    _removeListners = function() {
+        drawnItems.eachLayer(function(layer){
+            if (isPolygon(layer)) { // If the dom element clicked matches the matching Leaflet layer
+                layer.off("click", function(){});
+                $(layer._arcDomElement).off();
+            }
+        });
+    };
 
     function changeLabelSize(domElement, size, width) {
 
@@ -327,7 +338,7 @@ jQuery(document).ready(function($) {
                 // If deleting
                 getLabel(layer).hide();
             }
-            else {
+            else if (!USER_GEOJSON) {
                 // Normal interaction
                 populateFieldTextModal(layer);
             }
@@ -350,12 +361,7 @@ jQuery(document).ready(function($) {
         // Show the layers in the sidebar when they get hovered over
         var label = layer.label;
         var domElement = layer._arcDomElement;
-
-        // Have to do it for the label and the polgon layer (because leaflet)
-        //$(domElement).on("mouseover", function() { hoverOn(domElement); });
         layer.on("mouseover", function(e) { hoverOn(domElement); });
-
-        //$(domElement).on("mouseout",  function() { hoverOff(domElement); });
         layer.on("mouseout", function(e) { hoverOff(domElement); });
     }
 
@@ -409,15 +415,6 @@ jQuery(document).ready(function($) {
     $("#field-title").keyup(function(e) {
         handleTitle(false);
     });
-    // $("#field-title").focus(function(e) {
-    //     console.log("LE FOCUS" ,$("#field-title").val()   );
-    //     if ($("#field-title").val() !== "") {
-    //         handleTitle(true);
-    //     }
-    //     else {
-    //         $(".ar-carbon-save-description").css("visibility", "hidden");
-    //     }
-    // });
 
     function handleTitle(focus) {
         // We want to prevent users from having blank or duplicate titles!
@@ -533,6 +530,7 @@ jQuery(document).ready(function($) {
             geojson.features.push(layerjson);
         });
         geojsonstr = JSON.stringify(geojson);
+        USER_GEOJSON = geojsonstr;
         $(".ar-map-submit").attr("data-geojson", geojsonstr);
     }
 
@@ -624,7 +622,7 @@ jQuery(document).ready(function($) {
                 if (turf.intersect(layer1.toGeoJSON(), layer2.toGeoJSON())) {
                     inter = true;
                     if (remove) {
-                                map.removeLayer(layer1);
+                        map.removeLayer(layer1);
                     }
                     $('#intersects').openModal(modalOptions);
                 }

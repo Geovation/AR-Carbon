@@ -43,14 +43,15 @@ jQuery(document).ready(function($) {
             .done(function() {
                 console.debug("Data posted");
     			console.debug(data);
-                button.prop('disabled',true); // Undo the button disabling
+                button.prop('disabled',true ); // Undo the button disabling
                 $('#submit').openModal();
+                $('.leaflet-draw').hide();
                 // Give user feedback;
     		})
             .fail(function() {
               $('#submit-error').openModal(modalOptions);
               button.prop('disabled',false); // Undo the button disabling
-            });
+          });
         }
         else {
             $('#submit-error').openModal(modalOptions); // Show an error messag

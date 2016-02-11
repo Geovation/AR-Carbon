@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.9
+ * Version:           1.0.10
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -43,7 +43,6 @@ function run_arcarbon_map() {
 		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/mapbox.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'leaflet-geocoder', plugins_url( '/assets/js/leaflet-geocoder-mapzen.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ));
 		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), 1.0, true );
@@ -92,8 +91,8 @@ function run_arcarbon_map() {
 			?>
 
 			<script type="text/javascript">
-				var MAPBOX_API_KEY = '<?php echo get_option( "map_api_key"); ?>'
-   				var USER_GEOJSON = '<?php echo get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true); ?>'
+				var MAPBOX_API_KEY = "<?php echo get_option( "map_api_key"); ?>";
+   				var USER_GEOJSON = "<?php echo addslashes(get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true)); ?>";
 			</script>
 
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
