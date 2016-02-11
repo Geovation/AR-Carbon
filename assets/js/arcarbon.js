@@ -173,6 +173,7 @@ jQuery(document).ready(function($) {
             updateTotalArea();
 
             if (!reinstantiate) {
+                console.log("OPEN THAT MODAL")
                 populateFieldTextModal(layer);
             }
 
@@ -192,9 +193,7 @@ jQuery(document).ready(function($) {
         updatePostData(); // Make sure we update post data!
     }
 
-    map.on('draw:editstop', function(e){
-        console.log("stop", controls);
-    });
+
 
     map.on('draw:edited', function (event) {
         // For all edited layers
@@ -259,6 +258,12 @@ jQuery(document).ready(function($) {
     map.on('draw:deletestart', function (event) {
         deleting = true;
     });
+    map.on('draw:deletestop', function(e){
+        drawnItems.eachLayer(function(layer){
+            getLabel(layer).show();
+        });
+        deleting = false;
+    });
     map.on('draw:editstart', function (event) {
         $(".field-div-icon").hide();
     });
@@ -316,7 +321,17 @@ jQuery(document).ready(function($) {
 
         // On click on either the polygon or the label -- ugly but necessary as label overlays layer
         layer.on("click", function (e) {
-            populateFieldTextModal(layer);
+
+
+            if (deleting) {
+                // If deleting
+                getLabel(layer).hide();
+            }
+            else {
+                // Normal interaction
+                populateFieldTextModal(layer);
+            }
+
         });
 
     }
@@ -337,10 +352,10 @@ jQuery(document).ready(function($) {
         var domElement = layer._arcDomElement;
 
         // Have to do it for the label and the polgon layer (because leaflet)
-        $(domElement).on("mouseover", function() { hoverOn(domElement); });
+        //$(domElement).on("mouseover", function() { hoverOn(domElement); });
         layer.on("mouseover", function(e) { hoverOn(domElement); });
 
-        $(domElement).on("mouseout",  function() { hoverOff(domElement); });
+        //$(domElement).on("mouseout",  function() { hoverOff(domElement); });
         layer.on("mouseout", function(e) { hoverOff(domElement); });
     }
 
@@ -392,18 +407,22 @@ jQuery(document).ready(function($) {
 
     // Handling user input for the field title
     $("#field-title").keyup(function(e) {
-        handleTitle(this, false);
+        handleTitle(false);
     });
-    $("#field-title").focus(function(e) {
-        if ($(this).val() !== "") {
-            handleTitle(this, true);
-        }
-    });
+    // $("#field-title").focus(function(e) {
+    //     console.log("LE FOCUS" ,$("#field-title").val()   );
+    //     if ($("#field-title").val() !== "") {
+    //         handleTitle(true);
+    //     }
+    //     else {
+    //         $(".ar-carbon-save-description").css("visibility", "hidden");
+    //     }
+    // });
 
-    function handleTitle(context, focus) {
+    function handleTitle(focus) {
         // We want to prevent users from having blank or duplicate titles!
         var msg;
-        var title = $(context).val();
+        var title = $("#field-title").val();
         if ((!focus && duplicateTitles(title)) || title === "") {
             msg = "Blank or duplicate field name! Field names must be none blank and unique!";
             $(".ar-carbon-save-description").css("visibility", "hidden");
@@ -456,9 +475,9 @@ jQuery(document).ready(function($) {
                 html: "<p class='label-text'>"+String(text)+"</p>",
                 iconSize: [110, 1]
             })
-        }).addTo(map)
-        .on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
-        .on("click", function(){ populateFieldTextModal(layer); });
+        }).addTo(map);
+        //.on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
+        //.on("click", function(){ populateFieldTextModal(layer); });
     }
 
     function getLabel(layer) {
@@ -492,7 +511,9 @@ jQuery(document).ready(function($) {
             $(layer._arcDomElement).css("background-color", "#daeac6");
 
             $("#field-title").focus();
-            //$(".ar-carbon-save-description").css("visibility", "hidden");
+            if (title === "") {
+                $(".ar-carbon-save-description").css("visibility", "hidden");
+            }
             $(".field-description-active").addClass("active");
 
         }
