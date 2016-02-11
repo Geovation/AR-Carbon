@@ -43,7 +43,6 @@ function run_arcarbon_map() {
 		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/mapbox.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'leaflet-geocoder', plugins_url( '/assets/js/leaflet-geocoder-mapzen.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ));
 		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), 1.0, true );
