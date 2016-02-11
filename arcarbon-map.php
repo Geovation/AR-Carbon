@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.8
+ * Version:           1.0.9
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -40,7 +40,7 @@ function run_arcarbon_map() {
 	function enqueue_scripts() {
 		$user_id = get_current_user_id();
 		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ),  array( 'jquery' ));
-		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/mapbox.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
 		wp_enqueue_script( 'leaflet-geocoder', plugins_url( '/assets/js/leaflet-geocoder-mapzen.js', __FILE__ ), array( 'jquery' ), 1.0, true );
@@ -91,16 +91,15 @@ function run_arcarbon_map() {
 
 			?>
 
-
-			<?php // echo get_option( "map_api_key"); ?>
 			<script type="text/javascript">
+				var MAPBOX_API_KEY = '<?php echo get_option( "map_api_key"); ?>'
    				var USER_GEOJSON = '<?php echo get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true); ?>'
 			</script>
 
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "mapbox.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet-geocoder-mapzen.css"  ?>">
