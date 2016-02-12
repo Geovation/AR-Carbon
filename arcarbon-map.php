@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.10
+ * Version:           1.0.11
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -36,21 +36,24 @@ include 'map-options.php';
 
 function run_arcarbon_map() {
 
-	add_action( 'wp_enqueue_scripts', 'enqueue_scripts' );
+	add_action( 'wp_enqueue_scripts', 'enqueue_scripts', 0 );
 	function enqueue_scripts() {
 		$user_id = get_current_user_id();
-		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ),  array( 'jquery' ));
-		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/mapbox.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__ ), array( 'jquery' ), 1.0, true );
-		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ));
-		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), 1.0, true );
+		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ) );
+		wp_enqueue_script( 'esri-leaflet', plugins_url( '/assets/js/esri-leaflet.js', __FILE__ ) );
+		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ));
+		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ));
+		wp_enqueue_script( 'esri-leaflet-geocoder', plugins_url( '/assets/js/esri-leaflet-geocoder.js', __FILE__ ));
+		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__));
+		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
+		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ), array( 'jquery' ));
+		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array( 'jquery' ));
 		wp_localize_script( 'arcarbon_map_update', 'update', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'user_id'  => $user_id
 		));
 	}
+
 
 	add_action( 'wp_ajax_nopriv_arcarbon_map_update', 'arcarbon_map_update' );
 	add_action( 'wp_ajax_arcarbon_map_update', 'arcarbon_map_update' );
@@ -83,6 +86,7 @@ function run_arcarbon_map() {
 	function arcarbon_map($content) {
 		$current_user = wp_get_current_user();
 		$user_id = get_current_user_id();
+		$is_logged_in = (is_user_logged_in()) ? 'true' : 'false';
 
 		if ( is_page( 'Populate Map' )  && in_the_loop()  ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
@@ -91,17 +95,17 @@ function run_arcarbon_map() {
 			?>
 
 			<script type="text/javascript">
-				var MAPBOX_API_KEY = "<?php echo get_option( "map_api_key"); ?>";
+				var USER_LOGGED_IN = ("<?php echo $is_logged_in ?>" === 'true');
    				var USER_GEOJSON = "<?php echo addslashes(get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true)); ?>";
 			</script>
 
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "mapbox.css"  ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet-geocoder-mapzen.css"  ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "esri-leaflet-geocoder.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">
 
 			<div class="row ar-map-full ar-map-container">
@@ -109,8 +113,16 @@ function run_arcarbon_map() {
 			        <div>
 			            <div class="row">
 			                <div class="col s12">
-			                    <h6> Welcome back  </h6>
-			                    <h5> <?php echo $current_user->user_firstname; echo $current_user->user_lastname; ?> </h5>
+								<?php
+									if (is_user_logged_in()) {
+    									echo "<h6> Welcome back  </h6>";
+										echo "<h5>" . $current_user->user_firstname . " " . $current_user->user_lastname . "</h5>";
+									}
+									else {
+										echo "<h6><h6><h5>Please Log In</h5>";
+									}
+								?>
+
 			                </div>
 			            </div>
 

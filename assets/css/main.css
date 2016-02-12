@@ -84,6 +84,8 @@ button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:active {
     padding-bottom: 2px;
 }
 
+
+
 /** We need to make sure we can click on polygons and not get them obscured by labels **/
 /*.leaflet-overlay-pane {
     z-index: 10;
@@ -164,27 +166,50 @@ nav {
     cursor: default;/*plain arrow*/
 }
 
-/** Materialize hides the geocoder **/
-.leaflet-control-layers-list input[type="radio"] {
-     position: initial !important;
-     left: 0px !important;
-     visibility: visible !important;
-}
-
-.leaflet-control-mapbox-geocoder {
-    position: absolute;
-    margin-left: 50px !important;
-}
 
 /** Make the arrow center. **/
 .leaflet-control-locate .fa-location-arrow  {
-    padding-left: 6px;
-    padding-top: 4px;
+    padding: 0px;
 }
+
 .label-text {
     height: 0px;
     width: 110px;
     padding: 0px !important;
     margin: 0px !important;
     cursor: default; /*plain arrow*/
+}
+
+.total-hectares-text {
+    text-overflow: ellipsis;
+    padding: 0px;
+    width: 100px;
+    overflow: hidden;
+}
+
+/** Esri Geocoder Overiding to make it less bad **/
+.geocoder-control {
+    border-bottom: none !important;
+    background-color: white;
+    position: absolute;
+    left: 35px;
+    height: 50px;
+    padding-bottom: 7px;
+    border-radius: 2px;
+}
+.geocoder-control-input {
+    border-bottom: none !important;
+}
+.geocoder-control-suggestions {
+    top: 40px !important;
+
+}
+.geocoder-control-list {
+    margin:0px !important;
+    padding:0px !important;
+
+}
+.geocoder-control-suggestion {
+    margin: 0px !important;
+
 }

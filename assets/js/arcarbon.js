@@ -1,7 +1,5 @@
-var _removeListners;
 jQuery(document).ready(function($) {
-
-
+    //console.log(USER_LOGGED_IN, typeof USER_LOGGED_IN);
     // Needed to allow for editing polygon intersection checking and preventing console error
     L.EditToolbar = L.EditToolbar.extend({
         _save: function () {
@@ -37,9 +35,8 @@ jQuery(document).ready(function($) {
         warn: function () {}
     };
 
-    // Setup the MAPBOX API KEY
-    L.mapbox.accessToken = MAPBOX_API_KEY;
-    MAPBOX_API_KEY = "";
+    // Setup the Esri API KEY
+
 
     // Initialisation
     var boundingBox = L.latLngBounds(
@@ -47,8 +44,7 @@ jQuery(document).ready(function($) {
             L.latLng({lat: 62.52, lng :4.11})
         ),
         center = boundingBox.getCenter(),
-        //osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
-        map = new L.mapbox.map('arcarbon-map', null, { maxZoom: 18 }).setView(center, 5),
+        map = L.map('arcarbon-map', {maxBounds: boundingBox}).setView(center, 5),
         drawnItems = new L.FeatureGroup().addTo(map),
         saveArray = [],
         totalHectares = 0.0,
@@ -84,17 +80,18 @@ jQuery(document).ready(function($) {
             complete: undefined,
         };
 
-        var layers = {
-          Satellite: L.mapbox.tileLayer('mapbox.satellite'),
-          Streets: L.mapbox.tileLayer('mapbox.streets'),
-          Outdoors: L.mapbox.tileLayer('mapbox.outdoors')
-        };
+    // Esri Base Map
+    L.esri.basemapLayer("Imagery", {maxZoom: 18}).addTo(map); // 19 produces 'no map tiles available'
 
-        layers.Satellite.addTo(map);
-        L.control.layers(layers).addTo(map);
+    // Esri Geocoder
+    var searchControl = new L.esri.Geocoding.Controls.Geosearch({
+        useMapBounds: false
+    }).addTo(map);
 
-
-    if (USER_GEOJSON && !DEVELOPMENT) {
+    // If user has previous polygons saved and we're not in developement, or the user is not logged in
+    console.log(USER_LOGGED_IN)
+    if ((USER_GEOJSON && !DEVELOPMENT) || !USER_LOGGED_IN) {
+        console.log(USER_LOGGED_IN);
         enableDraw = false;
         enableEdit = false;
     }
@@ -105,24 +102,17 @@ jQuery(document).ready(function($) {
         edit : enableEdit
     });
     map.addControl(controls);
-    map.addControl(L.mapbox.geocoderControl('mapbox.places', {
-        keepOpen : false,
-        autocomplete: true,
-        position: 'topleft'
-
-    }));
-    $(".mapbox-icon-geocoder").text(""); // Removes random text in the geocoder
 
     // Locate User Control
     L.control.locate({icon: 'fa fa-location-arrow'}).addTo(map);
 
     // If they have previous outlines, reinstatiate those
-    if (USER_GEOJSON) {
+    if (USER_LOGGED_IN && USER_GEOJSON) {
         reinstantiateData(USER_GEOJSON);
     }
 
     // Check if they can submit
-        checkCanSubmit();
+    checkCanSubmit();
 
     // EVENT HANDLERS
     // Lets handle all of the many events that we will get from users
@@ -396,7 +386,7 @@ jQuery(document).ready(function($) {
 
     function checkCanSubmit(){
         // If no layers OR they have previously submitted
-        if (!drawnItems.getLayers().length || (USER_GEOJSON && !DEVELOPMENT) ) {
+        if ((!USER_LOGGED_IN) || !drawnItems.getLayers().length || (USER_GEOJSON && !DEVELOPMENT)) {
             disableSubmit();
         }
         else if (drawnItems.getLayers().length) {
@@ -581,7 +571,7 @@ jQuery(document).ready(function($) {
                 }
             });
         }
-        $("#area-value").html("<h5>"+totalHectares.toFixed(2)+"</h2>");
+        $("#area-value").html("<h5 class='total-hectares-text'>"+totalHectares.toFixed(2)+"</h2>");
 
     }
 
