@@ -1,0 +1,35 @@
+#admin_filter, #example_length{
+    display:none !important;
+}
+
+.dataTables_scrollBody {
+    overflow-x: scroll !important;
+}
+
+.searchable {
+    background-color: rgb(249, 249, 249) !important;
+}
+
+.admin-update {
+    background-color: #86BD44 !important;
+    margin-top: 30px !important;
+    margin: auto !important;
+    display: inherit;
+    width: 400px;
+}
+
+.add-column {
+    background-color: #86BD44 !important;
+    width: 30px !important;
+    height: 30px !important;
+}
+.add-column-text {
+    line-height: 0px !important;
+    position: absolute !important;
+    top: 15px !important;
+    left: 0px !important;
+}
+
+.add-column-holder {
+
+}
