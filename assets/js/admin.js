@@ -1,16 +1,20 @@
 
 jQuery(document).ready(function($) {
 
-    if (!checkOneFarmer() || true) {
-        console.log($("#example tbody td input").prop("disabled"));
-        $("#example tbody td input").prop("disabled",true);
+    var editableVars = "#admin tbody td input";
+
+    // Initialise state
+    if (!checkOneFarmer()) {
+        console.log($(editableVars).prop("disabled"));
+        $(editableVars).prop("disabled",true);
         $(".add-column-holder").hide();
     }
-    $("#example-filter").hide(); // We don't want the full search bar
+    $("#admin-filter").hide(); // We don't want the full search bar
     $(".admin-update").hide();
 
 
-    $('#example tfoot th').each( function () {
+    // For Field ID and User name columns, add a column filter.
+    $('#admin tfoot th').each( function () {
         if ($(this).hasClass("searchable")) {
             var title = $(this).text();
             $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
@@ -20,11 +24,12 @@ jQuery(document).ready(function($) {
         }
     } );
 
-    $("#example tbody td input").on("change", function(){
+    // Show the update button
+    $(editableVars).on("change", function(){
         notOneFarmerHide(".admin-update");
     });
 
-    var table = $('#example').DataTable();
+    var table = $('#admin').DataTable();
 
     // Appy the search
     table.columns().every( function () {
@@ -40,11 +45,11 @@ jQuery(document).ready(function($) {
 
     function checkInputs() {
         if(!checkOneFarmer()) {
-            $("#example tbody td input").prop("disabled",true);
+            $(editableVars).prop("disabled",true);
         }
         else {
             console.log("disabling");
-            $("#example tbody td input").prop("disabled",false);
+            $(editableVars).prop("disabled",false);
         }
     }
 

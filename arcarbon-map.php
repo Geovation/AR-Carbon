@@ -268,7 +268,7 @@ function run_arcarbon_map() {
 		<?php } else { ?>
 
 			<div class="row ar-map-full">
-				<table id="example" class="display" cellspacing="0" width="100%">
+				<table id="admin" class="display" cellspacing="0" width="100%">
 					<thead>
 				           <tr>
 				               <th>Field ID</th>
