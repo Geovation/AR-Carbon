@@ -36,33 +36,41 @@ include 'map-options.php';
 
 function run_arcarbon_map() {
 
-	add_action( 'wp_enqueue_scripts', 'enqueue_scripts', 0 );
 	function enqueue_scripts() {
+		$admin = current_user_can( 'administrator' );
+
 		$user_id = get_current_user_id();
-		wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ) );
-		wp_enqueue_script( 'esri-leaflet', plugins_url( '/assets/js/esri-leaflet.js', __FILE__ ) );
-		wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ));
-		wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ));
-		wp_enqueue_script( 'esri-leaflet-geocoder', plugins_url( '/assets/js/esri-leaflet-geocoder.js', __FILE__ ));
-		wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__));
-		wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
-		wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ), array( 'jquery' ));
-		wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array( 'jquery' ));
-		wp_localize_script( 'arcarbon_map_update', 'update', array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'user_id'  => $user_id
-		));
+		$current_user = wp_get_current_user();
+		if ($admin) {
+			wp_enqueue_script( 'tables', plugins_url( '/assets/js/jquery.dataTables.min.js', __FILE__ ), array('jquery') );
+			wp_enqueue_script( 'admin',  plugins_url( '/assets/js/admin.js', __FILE__ ), array('jquery') );
+		}
+		else {
+			wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ) );
+			wp_enqueue_script( 'esri-leaflet', plugins_url( '/assets/js/esri-leaflet.js', __FILE__ ) );
+			wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ));
+			wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ));
+			wp_enqueue_script( 'esri-leaflet-geocoder', plugins_url( '/assets/js/esri-leaflet-geocoder.js', __FILE__ ));
+			wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__));
+			wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
+			wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ), array( 'jquery' ));
+			wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array( 'jquery' ));
+			wp_localize_script( 'arcarbon_map_update', 'update', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'user_id'  => $user_id
+			));
+		}
 	}
 
 
 	add_action( 'wp_ajax_nopriv_arcarbon_map_update', 'arcarbon_map_update' );
 	add_action( 'wp_ajax_arcarbon_map_update', 'arcarbon_map_update' );
 	function arcarbon_map_update() {
+
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 
 			$user_id = $_POST['user_id'];
 			$geojson = stripslashes($_POST['geojson']);
-
 			$updateGeojson = update_user_meta( $user_id, "arcarbon_map_geojson", $geojson );
 
 			$updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
@@ -84,6 +92,7 @@ function run_arcarbon_map() {
 
 	add_action( 'the_content', 'arcarbon_map' );
 	function arcarbon_map($content) {
+		$admin = current_user_can( 'administrator' );
 		$current_user = wp_get_current_user();
 		$user_id = get_current_user_id();
 		$is_logged_in = (is_user_logged_in()) ? 'true' : 'false';
@@ -101,6 +110,10 @@ function run_arcarbon_map() {
 
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
+			<?php if($admin) { ?>
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery.dataTables.min.css" ?>">
+			<link rel="stylesheet" type='text/css' href="<?php echo $css . "admin.css" ?>">
+			<?php } ?>
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
@@ -108,6 +121,7 @@ function run_arcarbon_map() {
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "esri-leaflet-geocoder.css"  ?>">
 			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">
 
+			<?php if (!$admin) { ?>
 			<div class="row ar-map-full ar-map-container">
 			    <div class="col s3 ar-map-full">
 			        <div>
@@ -251,10 +265,69 @@ function run_arcarbon_map() {
 		     </div>
 
 			</div>
-			<?php
+		<?php } else { ?>
+
+			<div class="row ar-map-full">
+				<table id="example" class="display" cellspacing="0" width="100%">
+					<thead>
+				           <tr>
+				               <th>Field ID</th>
+				               <th>User Name</th>
+				               <th>Email</th>
+				               <th>Area</th>
+				               <th>SOM</th>
+				           </tr>
+					       </thead>
+					       <tfoot>
+					           <tr>
+					               <th class="searchable">Field ID</th>
+					               <th class="searchable">User Name</th>
+					               <th>Email</th>
+					               <th>Area</th>
+					               <th>SOM</th>
+					           </tr>
+					       </tfoot>
+					       <tbody>
+							   <?php
+ 					              $users = get_users( array( 'fields' => 'all_with_meta' ) );
+ 					              // Array of WP_User objects.
+ 					              foreach ( $users as $user ) {
+ 					                  $area = 0.0;
+ 					                  $geojson = json_decode($user->arcarbon_map_geojson);
+ 					                  if (!empty($geojson)) {
+ 					                      foreach ($geojson->features as $feature) {
+ 					                          $area += floatval($feature->properties->area);
+ 					                          $fieldId = $feature->properties->title;
+ 					                          echo
+ 					                          '<tr>
+ 					                              <td>'.$fieldId.'</td>
+ 					                              <td>'.$user->display_name.'</td>
+ 					                              <td>'.$user->user_email.'</td>
+ 					                              <td>'.$area.'</td>
+ 					                              <td><input type="text" id="row-1-age" name="row-1-age" value="blank"></td>
+ 					                          </tr>';
+
+ 					                      }
+ 					                  }
+								  }
+								?>
+						</tbody>
+				</table>
+				<p class="add-column-holder">
+					Add Column: <a class="add-column btn-floating btn-large waves-effect waves-light"><i class="material-icons add-column-text">add</i></a>
+				</p>
+			    <button  class="admin-update btn waves-effect waves-light" type="submit" name="action" >Update! <i class="material-icons right">send</i></button>
+			</div>
+
+		<?php }
+		 ?>
+
+		<?php
 		}
 
 	}
+
+	add_action( 'wp_enqueue_scripts', 'enqueue_scripts', 0 );
 
 	function handleGeojson($geojson) {
 
