@@ -45,8 +45,6 @@ function run_arcarbon_map() {
 			wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
 			wp_enqueue_script( 'tables', plugins_url( '/assets/js/jquery.dataTables.min.js', __FILE__ ), array('jquery') );
 
-			// wp_enqueue_script( 'admin',  plugins_url( '/assets/js/admin.js', __FILE__ ), array('jquery') );
-
 			wp_enqueue_script( 'arcarbon_admin_search',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
 			wp_localize_script( 'arcarbon_admin_search', 'update', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' )
@@ -83,31 +81,16 @@ function run_arcarbon_map() {
 			$user = get_userdatabylogin($username);
 			$originalGeojson = get_user_meta($user->ID, "arcarbon_map_geojson", true );
 			$headers = get_option("arcarbon_headers");
-
-			//echo $originalGeojson;
-
 			if (gettype($originalGeojson) == boolean ) {
-				$originalGeojson = "false";
+				$originalGeojson = "false"; // If it doesn't exist just make it false
 			}
 
+			// Return our JSON
 			echo '{ "headers" :'.$headers . ', "geojson" : '.$originalGeojson.
 				 ' , "email" : "'. $user->user_email . '",'.
 				 '   "name"  : "'. $user->first_name . " " . $user->last_name . '"
 			  	}';
 
-
-			// $updateGeojson = update_user_meta( $farmer_id, "arcarbon_map_geojson", $geojson );
-			//
-			// $updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
-			// $checkGeojson = get_user_meta($user_id,  "arcarbon_map_geojson", true );
-			// $geojsonCheck = ( $checkGeojson == $geojson);
-			//
-			// if ( !$geojsonCheck ) {
-			// 	echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
-			// }
-			// else {
-			// 	echo "{'success': 'Data posted to WP!'}";
-			// }
 		}
 		else {
 			echo "{'error', 'Something went wrong'}";

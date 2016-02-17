@@ -2,7 +2,7 @@
 <?php
     // If the carbon headers does not exist make them
     $headers = get_option( "arcarbon_headers");
-    //echo $headers;
+
     if (!$headers) {
         $headers = '{
             "arcarbon_farm_name" : "Farm Name",

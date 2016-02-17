@@ -89,7 +89,7 @@ jQuery(document).ready(function($) {
     }).addTo(map);
 
     // If user has previous polygons saved and we're not in developement, or the user is not logged in
-    console.log(USER_LOGGED_IN)
+    //console.log(USER_LOGGED_IN)
     if ((USER_GEOJSON && !DEVELOPMENT) || !USER_LOGGED_IN) {
         console.log(USER_LOGGED_IN);
         enableDraw = false;

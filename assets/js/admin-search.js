@@ -181,7 +181,6 @@ jQuery(document).ready(function($) {
         }
     }
 
-
     // Convience functions
     function hideError() {
         $(".error-holder").hide();
