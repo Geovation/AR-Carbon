@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.12
+ * Version:           1.0.13
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -42,8 +42,17 @@ function run_arcarbon_map() {
 		$user_id = get_current_user_id();
 		$current_user = wp_get_current_user();
 		if ($admin) {
+			wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
 			wp_enqueue_script( 'tables', plugins_url( '/assets/js/jquery.dataTables.min.js', __FILE__ ), array('jquery') );
-			wp_enqueue_script( 'admin',  plugins_url( '/assets/js/admin.js', __FILE__ ), array('jquery') );
+
+			wp_enqueue_script( 'arcarbon_admin_search',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
+			wp_localize_script( 'arcarbon_admin_search', 'update', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' )
+			));
+			// wp_enqueue_script( 'admin_update',  plugins_url( '/assets/js/admin-update.js', __FILE__ ), array('jquery') );
+			// wp_localize_script( 'admin_update', 'update', array(
+			// 	'ajax_url' => admin_url( 'admin-ajax.php' )
+			// ));
 		}
 		else {
 			wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ) );
@@ -60,6 +69,34 @@ function run_arcarbon_map() {
 				'user_id'  => $user_id
 			));
 		}
+	}
+
+	add_action( 'wp_ajax_nopriv_arcarbon_admin_search', 'arcarbon_admin_search' );
+	add_action( 'wp_ajax_arcarbon_admin_search', 'arcarbon_admin_search' );
+	function arcarbon_admin_search() {
+
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
+
+			$username = $_POST['username'];
+			$user = get_userdatabylogin($username);
+			$originalGeojson = get_user_meta($user->ID, "arcarbon_map_geojson", true );
+			$headers = get_option("arcarbon_headers");
+			if (gettype($originalGeojson) == boolean ) {
+				$originalGeojson = "false"; // If it doesn't exist just make it false
+			}
+
+			// Return our JSON
+			echo '{ "headers" :'.$headers . ', "geojson" : '.$originalGeojson.
+				 ' , "email" : "'. $user->user_email . '",'.
+				 '   "name"  : "'. $user->first_name . " " . $user->last_name . '"
+			  	}';
+
+		}
+		else {
+			echo "{'error', 'Something went wrong'}";
+		}
+		die();
+
 	}
 
 
@@ -83,6 +120,34 @@ function run_arcarbon_map() {
 			else {
 				echo "{'success': 'Data posted to WP!'}";
 			}
+		}
+		else {
+			echo "{'error', 'Something went wrong'}";
+		}
+		die();
+	}
+
+	add_action( 'wp_ajax_nopriv_admin_update', 'admin_update' );
+	add_action( 'wp_ajax_admin_update', 'admin_update' );
+	function admin_update() {
+
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
+
+			$farmer_id = $_POST['farmer_id'];
+			$originalGeojson = json_decode(get_user_meta($farmer_id, "arcarbon_map_geojson", true ));
+
+			// $updateGeojson = update_user_meta( $farmer_id, "arcarbon_map_geojson", $geojson );
+			//
+			// $updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
+			// $checkGeojson = get_user_meta($user_id,  "arcarbon_map_geojson", true );
+			// $geojsonCheck = ( $checkGeojson == $geojson);
+			//
+			// if ( !$geojsonCheck ) {
+			// 	echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
+			// }
+			// else {
+			// 	echo "{'success': 'Data posted to WP!'}";
+			// }
 		}
 		else {
 			echo "{'error', 'Something went wrong'}";
@@ -265,62 +330,9 @@ function run_arcarbon_map() {
 		     </div>
 
 			</div>
-		<?php } else { ?>
-
-			<div class="row ar-map-full">
-				<table id="admin" class="display" cellspacing="0" width="100%">
-					<thead>
-				           <tr>
-				               <th>Field ID</th>
-				               <th>User Name</th>
-				               <th>Email</th>
-				               <th>Area</th>
-				               <th>SOM</th>
-				           </tr>
-					       </thead>
-					       <tfoot>
-					           <tr>
-					               <th class="searchable">Field ID</th>
-					               <th class="searchable">User Name</th>
-					               <th>Email</th>
-					               <th>Area</th>
-					               <th>SOM</th>
-					           </tr>
-					       </tfoot>
-					       <tbody>
-							   <?php
- 					              $users = get_users( array( 'fields' => 'all_with_meta' ) );
- 					              // Array of WP_User objects.
- 					              foreach ( $users as $user ) {
- 					                  $area = 0.0;
- 					                  $geojson = json_decode($user->arcarbon_map_geojson);
- 					                  if (!empty($geojson)) {
- 					                      foreach ($geojson->features as $feature) {
- 					                          $area += floatval($feature->properties->area);
- 					                          $fieldId = $feature->properties->title;
- 					                          echo
- 					                          '<tr>
- 					                              <td>'.$fieldId.'</td>
- 					                              <td>'.$user->display_name.'</td>
- 					                              <td>'.$user->user_email.'</td>
- 					                              <td>'.$area.'</td>
- 					                              <td><input type="text" id="row-1-age" name="row-1-age" value="blank"></td>
- 					                          </tr>';
-
- 					                      }
- 					                  }
-								  }
-								?>
-						</tbody>
-				</table>
-				<p class="add-column-holder">
-					Add Column: <a class="add-column btn-floating btn-large waves-effect waves-light"><i class="material-icons add-column-text">add</i></a>
-				</p>
-			    <button  class="admin-update btn waves-effect waves-light" type="submit" name="action" >Update! <i class="material-icons right">send</i></button>
-			</div>
-
-		<?php }
-		 ?>
+		<?php } else {
+			include_once 'arcarbon-admin.php'; // Include the admin part of the app
+		 } ?>
 
 		<?php
 		}

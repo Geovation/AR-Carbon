@@ -2,12 +2,24 @@
     display:none !important;
 }
 
+.dataTables_length {
+    display: none !important;
+}
+
 .dataTables_scrollBody {
     overflow-x: scroll !important;
 }
 
+.contact-head th {
+    text-align: center;
+}
+
 .searchable {
     background-color: rgb(249, 249, 249) !important;
+}
+
+#admin-holder {
+    display: none;
 }
 
 .admin-update {
