@@ -18,12 +18,16 @@ jQuery(document).ready(function($) {
             complete: undefined,
      };
 
-     var previousSearch;
+    var previousSearch;
 
      // Initialise
     var table;
     var editableVars = "#admin tbody td input";
     $("#content > h1").text("Admin Panel");
+
+    $('.search-farmers').submit(function(e){
+        e.preventDefault();
+    });
 
     // Enable the update button on change to inputs
     $(document).on("change", editableVars, function(){

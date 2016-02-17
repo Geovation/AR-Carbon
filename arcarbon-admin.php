@@ -29,7 +29,7 @@
 ?>
 
 <div class="row ar-map-full">
-   <form>
+   <form class="search-farmers">
     <div class="row">
        <div class="input-field col s12 ">
          <input id="username-search" type="text" class="validate">

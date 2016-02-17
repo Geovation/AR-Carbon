@@ -1,6 +1,5 @@
 jQuery(document).ready(function($) {
     $( document ).on( 'click', '.admin-update-confirm', function() {
-    console.log("clicking the button");
 
         window.console = window.console || {
             log: function () {},
