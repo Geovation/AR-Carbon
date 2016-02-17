@@ -514,9 +514,9 @@ jQuery(document).ready(function($) {
         var layerjson;
         drawnItems.eachLayer(function(layer) {
             layerjson = layer.toGeoJSON();
-            layerjson.properties.area = layer._arcArea;
-            layerjson.properties.title = layer._arcFieldTitle;
-            layerjson.properties.description = layer._arcFieldDescription;
+            layerjson.properties.arcarbon_farm_name = layer._arcFieldTitle;
+            layerjson.properties.arcarbon_area = layer._arcArea;
+            layerjson.properties.arcarbon_description = layer._arcFieldDescription;
             geojson.features.push(layerjson);
         });
         geojsonstr = JSON.stringify(geojson);
