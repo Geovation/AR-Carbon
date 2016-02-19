@@ -171,6 +171,19 @@ nav {
     box-shadow: none;
 }
 
+.foot > nav {
+    height: 20px !important;
+    float: left;
+    display: block;
+    background-color: rgba(0,0,0,0);
+    width: 250.9px;
+}
+
+.foot nav a {
+    font-size: 13px !important;
+}
+
+
 .field-div-icon {
     pointer-events: none;
     text-align: center;

@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.13
+ * Version:           1.0.15
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -36,38 +36,88 @@ include 'map-options.php';
 
 function run_arcarbon_map() {
 
+
+	// Load in all the necessary JavaScript
+	add_action( 'wp_enqueue_scripts', 'enqueue_scripts');
 	function enqueue_scripts() {
-		$admin = current_user_can( 'administrator' );
+		if (is_page( 'Populate Map' )) { // Make sure we are on the right page
 
-		$user_id = get_current_user_id();
-		$current_user = wp_get_current_user();
-		if ($admin) {
-			wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
-			wp_enqueue_script( 'tables', plugins_url( '/assets/js/jquery.dataTables.min.js', __FILE__ ), array('jquery') );
+			// If the user is an administrator
+			if (current_user_can( 'administrator' )) {
+				wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
+				wp_enqueue_script( 'tables', plugins_url( '/assets/js/jquery.dataTables.min.js', __FILE__ ), array('jquery') );
 
-			wp_enqueue_script( 'arcarbon_admin_search',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
-			wp_localize_script( 'arcarbon_admin_search', 'update', array(
-				'ajax_url' => admin_url( 'admin-ajax.php' )
-			));
-			// wp_enqueue_script( 'admin_update',  plugins_url( '/assets/js/admin-update.js', __FILE__ ), array('jquery') );
-			// wp_localize_script( 'admin_update', 'update', array(
-			// 	'ajax_url' => admin_url( 'admin-ajax.php' )
-			// ));
+				wp_enqueue_script( 'arcarbon_admin_search',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
+				wp_localize_script( 'arcarbon_admin_search', 'update', array(
+					'ajax_url' => admin_url( 'admin-ajax.php' )
+				));
+				wp_enqueue_script( 'arcarbon_admin_update',  plugins_url( '/assets/js/admin-update.js', __FILE__ ), array('jquery') );
+				wp_localize_script( 'arcarbon_admin_update', 'update', array(
+					'ajax_url' => admin_url( 'admin-ajax.php' )
+				));
+			}
+			// If they are a user
+			else {
+				wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ) );
+				wp_enqueue_script( 'esri-leaflet', plugins_url( '/assets/js/esri-leaflet.js', __FILE__ ) );
+				wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ));
+				wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ));
+				wp_enqueue_script( 'esri-leaflet-geocoder', plugins_url( '/assets/js/esri-leaflet-geocoder.js', __FILE__ ));
+				wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__));
+				wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
+				wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ), array( 'jquery' ));
+				wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array( 'jquery' ));
+				wp_localize_script( 'arcarbon_map_update', 'update', array(
+					'ajax_url' => admin_url( 'admin-ajax.php' ),
+					'user_id'  => get_current_user_id()
+				));
+			}
 		}
-		else {
-			wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ) );
-			wp_enqueue_script( 'esri-leaflet', plugins_url( '/assets/js/esri-leaflet.js', __FILE__ ) );
-			wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ));
-			wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ));
-			wp_enqueue_script( 'esri-leaflet-geocoder', plugins_url( '/assets/js/esri-leaflet-geocoder.js', __FILE__ ));
-			wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__));
-			wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
-			wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ), array( 'jquery' ));
-			wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array( 'jquery' ));
-			wp_localize_script( 'arcarbon_map_update', 'update', array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'user_id'  => $user_id
-			));
+	}
+
+
+	// Overwrite the title for our page
+	add_filter('the_title', arcarbon_admin_title, 100);
+	function arcarbon_admin_title($title) {
+	  if( current_user_can( 'administrator' ) && $title == 'Populate Map' ){
+		return "Admin Panel";
+	  }
+	  else {
+		  return $title;
+	  }
+	}
+
+	// Overwrite the content for our page
+	add_action( 'the_content', 'arcarbon_map');
+	function arcarbon_map($content) {
+		$admin = current_user_can( 'administrator' );
+		$current_user = wp_get_current_user();
+		$user_id = get_current_user_id();
+		$is_logged_in = (is_user_logged_in()) ? 'true' : 'false';
+
+		if ( is_page( 'Populate Map' )  && in_the_loop() ) {
+			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
+			?>
+			<script type="text/javascript">
+				<?php $g = get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true); ?>
+				var USER_LOGGED_IN = ("<?php echo $is_logged_in ?>" === 'true');
+				var USER_GEOJSON = <?php echo "'$g'"; ?>;
+
+			</script>
+
+			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+			<?php
+			$css = plugin_dir_url( __FILE__ ) . "assets/css/";
+
+			if (!$admin) {
+				include_once 'arcarbon-farmer.php'; // Include the admin part of the app
+			}
+			else {
+
+				include_once 'arcarbon-admin.php'; // Include the admin part of the app
+			}
 		}
 	}
 
@@ -79,26 +129,20 @@ function run_arcarbon_map() {
 
 			$username = $_POST['username'];
 			$user = get_userdatabylogin($username);
-			$originalGeojson = get_user_meta($user->ID, "arcarbon_map_geojson", true );
+			$geojson = get_user_meta($user->ID, "arcarbon_map_geojson", true );
 			$headers = get_option("arcarbon_headers");
-			if (gettype($originalGeojson) == boolean ) {
-				$originalGeojson = "false"; // If it doesn't exist just make it false
+			if (gettype($geojson) == boolean ) {
+				$geojson = "false"; // If it doesn't exist just make it false
 			}
 
-			// Return our JSON
-			echo '{ "headers" :'.$headers . ', "geojson" : '.$originalGeojson.
-				 ' , "email" : "'. $user->user_email . '",'.
-				 '   "name"  : "'. $user->first_name . " " . $user->last_name . '"
-			  	}';
+			echo getUserData($user->ID, $geojson); // Return the JSON
 
 		}
 		else {
 			echo "{'error', 'Something went wrong'}";
 		}
 		die();
-
 	}
-
 
 	add_action( 'wp_ajax_nopriv_arcarbon_map_update', 'arcarbon_map_update' );
 	add_action( 'wp_ajax_arcarbon_map_update', 'arcarbon_map_update' );
@@ -108,8 +152,9 @@ function run_arcarbon_map() {
 
 			$user_id = $_POST['user_id'];
 			$geojson = stripslashes($_POST['geojson']);
-			$updateGeojson = update_user_meta( $user_id, "arcarbon_map_geojson", $geojson );
 
+			// REPLACE THIS WITH UPDATE GEOJSON WHEN YOU HAVE TIME TO TEST
+			$updateGeojson = update_user_meta( $user_id, "arcarbon_map_geojson", $geojson );
 			$updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
 			$checkGeojson = get_user_meta($user_id,  "arcarbon_map_geojson", true );
 			$geojsonCheck = ( $checkGeojson == $geojson);
@@ -127,27 +172,29 @@ function run_arcarbon_map() {
 		die();
 	}
 
-	add_action( 'wp_ajax_nopriv_admin_update', 'admin_update' );
-	add_action( 'wp_ajax_admin_update', 'admin_update' );
-	function admin_update() {
+	add_action( 'wp_ajax_nopriv_admin_update', 'arcarbon_admin_update' );
+	add_action( 'wp_ajax_admin_update', 'arcarbon_admin_update' );
+	function arcarbon_admin_update() {
 
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
 
 			$farmer_id = $_POST['farmer_id'];
-			$originalGeojson = json_decode(get_user_meta($farmer_id, "arcarbon_map_geojson", true ));
+			$changed_fields = $_POST['changed_fields'];
+			$geojson = json_decode(get_user_meta($farmer_id, "arcarbon_map_geojson", true ), true); // as associative array
+			$returnGeojson = $geojson;
 
-			// $updateGeojson = update_user_meta( $farmer_id, "arcarbon_map_geojson", $geojson );
-			//
-			// $updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
-			// $checkGeojson = get_user_meta($user_id,  "arcarbon_map_geojson", true );
-			// $geojsonCheck = ( $checkGeojson == $geojson);
-			//
-			// if ( !$geojsonCheck ) {
-			// 	echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
-			// }
-			// else {
-			// 	echo "{'success': 'Data posted to WP!'}";
-			// }
+			foreach ($geojson["features"] as $key => $field) {
+
+				$field_name = $field["properties"]["arcarbon_field_name"];
+				$changed_field = $changed_fields[$field_name]; // Get the update properties assoc array
+				foreach ($changed_field as $changed_key => $changed_val) {
+					$returnGeojson["features"][$key]["properties"][$changed_key] = $changed_val; // Take the geojson assoc array and replace the necessary val
+				}
+			}
+
+			$returnGeojson = json_encode($returnGeojson);
+			updateGeojson($farmer_id, $returnGeojson); // Take the updated geojson and replace it with the old geojson
+
 		}
 		else {
 			echo "{'error', 'Something went wrong'}";
@@ -155,191 +202,35 @@ function run_arcarbon_map() {
 		die();
 	}
 
-	add_action( 'the_content', 'arcarbon_map' );
-	function arcarbon_map($content) {
-		$admin = current_user_can( 'administrator' );
-		$current_user = wp_get_current_user();
-		$user_id = get_current_user_id();
-		$is_logged_in = (is_user_logged_in()) ? 'true' : 'false';
+	function updateGeojson($farmer_id, $geojson) {
 
-		if ( is_page( 'Populate Map' )  && in_the_loop()  ) {
-			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
-			$css = plugin_dir_url( __FILE__ ) . "assets/css/"
+		$updateGeojson = update_user_meta( $farmer_id, "arcarbon_map_geojson", $geojson );
+		$updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
+		$checkGeojson = get_user_meta($farmer_id,  "arcarbon_map_geojson", true );
+		$geojsonCheck = ( $checkGeojson == $geojson);
 
-			?>
-
-			<script type="text/javascript">
-				var USER_LOGGED_IN = ("<?php echo $is_logged_in ?>" === 'true');
-   				var USER_GEOJSON = "<?php echo addslashes(get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true)); ?>";
-			</script>
-
-			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
-			<?php if($admin) { ?>
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery.dataTables.min.css" ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "admin.css" ?>">
-			<?php } ?>
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.css"  ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "leaflet.draw.css"  ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "L.Control.Locate.min.css"  ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "esri-leaflet-geocoder.css"  ?>">
-			<link rel="stylesheet" type='text/css' href="<?php echo $css . "main.css"  ?>">
-
-			<?php if (!$admin) { ?>
-			<div class="row ar-map-full ar-map-container">
-			    <div class="col s3 ar-map-full">
-			        <div>
-			            <div class="row">
-			                <div class="col s12">
-								<?php
-									if (is_user_logged_in()) {
-    									echo "<h6> Welcome back  </h6>";
-										echo "<h5>" . $current_user->user_firstname . " " . $current_user->user_lastname . "</h5>";
-									}
-									else {
-										echo "<h6><h6><h5>Please Log In</h5>";
-									}
-								?>
-
-			                </div>
-			            </div>
-
-			            <div class="divider"></div>
-
-			            <div class="row ar-map-total ar-map-pad-top ar-map-unmargin-bot-row ">
-
-			                <div class="col s6">
-			                    <h6> Total Hectares</h6>
-			                </div>
-
-			                <div class="col s6" id="area-value"> </div>
-
-			            </div>
-
-			            <div class="divider"></div>
-			        </div>
-			        <div class="row ar-map-pad-top ar-map-plots-holder">
-			            <div class="col s12 ar-map-plots">
-			                <!-- Fields go here -->
-			            </div>
-			        </div>
-			        <div class="row ar-map-submit-holder">
-			            <button class="ar-map-submit ar-map-dark-green btn waves-effect waves-light" type="submit" name="action" autofocus=""
-							href="<?php echo admin_url( 'admin-ajax.php?action=arcarbon_map_update' ) ?>" disabled
-							data-geojson="<?php handleGeojson(get_user_meta(get_current_user_id(), "arcabon-map-geojson", true)); ?>" >
-							Submit
-			                <i class="material-icons right">send</i>
-			            </button>
-			        </div>
-			    </div>
-			    <div class="col s9 ar-map-full" >
-
-			        <div id="arcarbon-map" class="ar-map-full"></div>
-
-			    </div>
-
-				<!-- Intersects Modal Structure -->
-				<div id="intersects" class="modal">
-				  <div class="modal-content">
-					<h4>Your fields can not overlap!</h4>
-					<p>Please review your selections and make sure that it does not overlap with your current selected areas.</p>
-				  </div>
-				  <div class="modal-footer">
-					<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Ok, got it</a>
-				  </div>
-				</div>
-
-				<!-- Over 50 Hectares Modal Modal Structure -->
-				<div id="overfifty" class="modal">
-				  <div class="modal-content">
-					<h4>Your total hectares has exceeded 50!</h4>
-					<p>Please review your drawings to stay within the limit. If you want to add any information to this field, please click on it's boundary.</p>
-				  </div>
-				  <div class="modal-footer">
-					<a href="#!" class="ar-over-fifty-ok modal-action modal-close waves-effect waves-green btn-flat">Ok, got it</a>
-				  </div>
-				</div>
-
-				<!-- Submit button succesful Modal Structure -->
-			  <div id="submit" class="modal">
-			    <div class="modal-content">
-			      <h4>Your new plots have been submitted</h4>
-			      <p>Thank you for your submission</p>
-			    </div>
-			    <div class="modal-footer">
-			      <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Ok, got it</a>
-			    </div>
-			  </div>
-
-			  <!-- Submit button confirm Modal Structure -->
-			<div id="confirm-submit" class="modal">
-			  <div class="modal-content">
-				<h4>Once you have submitted you can not change your drawings</h4>
-				<p>Are you sure that you want to confirm these drawings? Upon submission they can not be changed.</p>
-			  </div>
-			  <div class="modal-footer">
-				<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I want to change something</a>
-				<a href="#!" class=" ar-map-submit-confirm modal-action modal-close waves-effect waves-green btn-flat">Confirm</a>
-			  </div>
-			</div>
-
-		   <!-- Submit button confirm Modal Structure -->
-		   <div id="submit-error" class="modal">
-			<div class="modal-content">
-			  <h4>Something appears to have gone wrong</h4>
-			  <p>It looks like something has gone wrong. It may have been a network error, so please try again.</p>
-			</div>
-			<div class="modal-footer">
-			  <a href="#!" class="modal-close waves-effect waves-green btn-flat">Ok, got it</a>
-			</div>
-		   </div>
-
-		   <!-- Submit button confirm Modal Structure -->
-		   <div id="geojson-error" class="modal">
-			<div class="modal-content">
-			  <h4>Something appears to have gone wrong</h4>
-			  <p>It looks like your drawing data has corrupted. Please contact your AR Carbon point of contact. </p>
-			</div>
-			<div class="modal-footer">
-			  <a href="#!" class="modal-close waves-effect waves-green btn-flat">Ok, got it</a>
-			</div>
-		   </div>
-
-			  <!-- Add farmer information Modal Structure -->
-		     <div id="field-text-edit" class="modal" data-keyboard="false">
-				 <div class="modal-content">
-	  				 <h4>Tell us a little about this plot...</h4>
-					 <br>
-					 <div class="input-field col s12">
-						 <i class="material-icons prefix">mode_edit</i>
-						 <input placeholder="Give this a title!" id="field-title" type="text" class="validate">
-	   		 			 <label class="field-title-label" for="field-title">Give this area an identifier (a name or a Field Parcel Number)</label>
-					</div>
-					<div class="input-field col s12">
-						 <i class="material-icons prefix">mode_edit</i>
-						 <textarea id="field-description" class="materialize-textarea"></textarea>
-						 <label class="active field-description-active" for="field-description">Please give an indication of field use</label>
-				    </div>
-  			   </div>
-  			   <div class="modal-footer">
-				   <div class="row ar-button-holder">
-	  				   <a href="#!" class="ar-carbon-save-description modal-action modal-close waves-effect waves-green btn-flat">Save Info</a>
-				   </div>
-  			   </div>
-		     </div>
-
-			</div>
-		<?php } else {
-			include_once 'arcarbon-admin.php'; // Include the admin part of the app
-		 } ?>
-
-		<?php
+		if ( !$geojsonCheck ) {
+			echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
 		}
-
+		else {
+			echo getUserData($farmer_id, $geojson);
+		}
 	}
 
-	add_action( 'wp_enqueue_scripts', 'enqueue_scripts', 0 );
+	function getUserData($farmer_id, $geojson) {
+		$headers = json_decode(get_option("arcarbon_headers"));
+		$geojson = json_decode($geojson);
+		$user = get_user_by("ID", $farmer_id);
+		return json_encode(
+				array(
+					"headers" => $headers,
+					"geojson" => $geojson,
+					"id"	  => $farmer_id,
+					"email"   => $user->user_email,
+					"name"    => $user->first_name . " " . $user->last_name
+				)
+			 );
+	}
 
 	function handleGeojson($geojson) {
 
@@ -351,7 +242,7 @@ function run_arcarbon_map() {
 		}
 	}
 
-}
 
+}
 
 run_arcarbon_map(); ?>

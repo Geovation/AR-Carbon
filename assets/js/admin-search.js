@@ -1,4 +1,5 @@
 var table;
+var lastLoadedData;
 
 jQuery(document).ready(function($) {
 
@@ -21,11 +22,10 @@ jQuery(document).ready(function($) {
      };
 
     // Initialise
-    var lastLoadedData;
     var previousSearch; // Variable to store previous search
     var editableVars = "#admin tbody td input"; // Store the selector of our inputs that can change
-    $("#content > h1").text("Admin Panel"); // Replace the text content of the h1 tag. There is probably a better way with WP hooks that avoids content flash?
     $('.search-farmers').submit(function(e){ e.preventDefault(); }); // Prevent the page from refreshing
+    addInputDataSorting(); // Inputs need to be sorted too!
 
     // Enable the update button on change to inputs
     $(document).on("change", editableVars, function(){
@@ -40,6 +40,7 @@ jQuery(document).ready(function($) {
     });
     // On confirm reload the table to it's previous state
     $( document ).on( 'click', '.admin-cancel-confirm', function() {
+        console.log("onClick lastloaded data", lastLoadedData);
         populateDataTables(lastLoadedData);
         $(".admin-cancel").prop("disabled", true);
         $(".admin-update").prop("disabled", true);
@@ -67,6 +68,7 @@ jQuery(document).ready(function($) {
             .done(function(data) {
                 try {
                     data = JSON.parse(data);  // Parse the data
+                    console.log(data);
                     if (!data.name || data.name == " ") {
                         throw("No user was found under that username. Please check spelling.");
                     }
@@ -90,10 +92,9 @@ jQuery(document).ready(function($) {
 
     function populateDataTables(data) {
         // Populate the tables with the Farmers field data and contact details
-        console.log(data);
         hideError();
 
-        headers = data.headers;
+        var headers = data.headers;
         var geojson = data.geojson;
         var email   = data.email;
         var name    = data.name;
@@ -101,7 +102,6 @@ jQuery(document).ready(function($) {
 
         // Loop through all fields and make a new row for each
         if (geojson.features) {
-            console.log("Empyt it");
             $("#admin tbody").remove();
             $("#admin thead").after("<tbody></tbody>");
             for (var j =0; j < geojson.features.length; j++) {
@@ -118,10 +118,10 @@ jQuery(document).ready(function($) {
                 "<br><br><h5> Contact Details </h5>" +
                 "<table class='contact'>" +
                     "<thead class='contact-head'>" +
-                        "<th> Name </th>" +
-                        "<th> Email </th>" +
-                        "<th> Address </th>" +
-                        "<th> Phone </th>" +
+                        "<th><b> Name </b></th>" +
+                        "<th><b> Email </b></th>" +
+                        "<th><b> Address </b></th>" +
+                        "<th><b> Phone </b></th>" +
                     "</thead>" +
                     "<tbody>" +
                         "<td>" + name + "</td>" +
@@ -143,7 +143,17 @@ jQuery(document).ready(function($) {
         if (table) {
             table.destroy(); // If we had a previous table we must destroy it first
         }
-        table = $('#admin').DataTable({ " scrollX" : true }); // Init the table
+
+        table = $('#admin').DataTable({
+             " scrollX" : true,
+             "columnDefs": [
+                {
+                    "orderDataType": "dom-input",
+                    "type": 'string',
+                    "targets": '_all'
+                }
+            ]
+        }); // Init the table
 
         showTable(); // Show the finished table
 
@@ -167,13 +177,14 @@ jQuery(document).ready(function($) {
         hideTable(); // Hide the table
         showError(); // Show Error
 
-        if (error.name === 'SyntaxError') {
+        if (error.name === 'SyntaxError' || error.name === 'TypeError' ) {
             // If data (JSON) is invalid in some way
+            var msg = "<h6><b>There was a problem with the user data</b>: No fields exist for this user yet.</h6>";
             if ($(".error-holder").length) {
-                $(".error-holder").replaceWith("<h6>There was a problem with the user data: '"+error+"' <h6>");
+                $(".error-holder").replaceWith("<h6>There was a problem with the user data: " + msg);
             }
             else {
-                $("#content-inner").append("<div class='error-holder'><h6>There was a problem with the user data: '"+error+"' <h6></div>");
+                $("#content-inner").append("<div class='error-holder'> " + msg + "</div>");
             }
         }
         else {
@@ -221,4 +232,14 @@ jQuery(document).ready(function($) {
         $("#admin-holder").show();
         $(".contact-details").show();
     }
+
+    function addInputDataSorting() {
+        $.fn.dataTable.ext.order['dom-input'] = function (settings, col) {
+            return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+                console.log($('input', td).val());
+                return $('input', td).val();
+            } );
+        };
+    }
+
 });
