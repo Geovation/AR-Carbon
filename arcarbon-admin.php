@@ -15,7 +15,7 @@
             "arcarbon_som" : "Field SOM (%)",
             "arcarbon_bulk_density" : "Bulk Density (g/l)",
             "arcarbon_percent_carbon" : "Carbon (%)",
-            "arcarbon_carbon_by_weight" : "Carbon by Weight (t/m3)",
+            "arcarbon_carbon_by_weight" : "Carbon by Weight (t/m³)",
             "arcarbon_total_carbon" : "Total carbon for field (tonnes)",
             "arcarbon_accumulation" : "Accumulation since last test (kg/ha)"
         }';

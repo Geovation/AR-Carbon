@@ -177,14 +177,14 @@ jQuery(document).ready(function($) {
         hideTable(); // Hide the table
         showError(); // Show Error
 
-        if (error.name === 'SyntaxError') {
+        if (error.name === 'SyntaxError' || error.name === 'TypeError' ) {
             // If data (JSON) is invalid in some way
-            var msg = "<h6><b>There was a problem with the user data</b>:No fields exist for this user yet.</h6>";
+            var msg = "<h6><b>There was a problem with the user data</b>: No fields exist for this user yet.</h6>";
             if ($(".error-holder").length) {
-                $(".error-holder").replaceWith("<h6>There was a problem with the user data: '" + msg);
+                $(".error-holder").replaceWith("<h6>There was a problem with the user data: " + msg);
             }
             else {
-                $("#content-inner").append("<div class='error-holder'> '" + msg + "</div>");
+                $("#content-inner").append("<div class='error-holder'> " + msg + "</div>");
             }
         }
         else {
