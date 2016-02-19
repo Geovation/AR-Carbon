@@ -1,5 +1,39 @@
+/** FIX THE THEME OVERWRITING **/
+nav {
+    background-color: #F2F2F2;
+    height: 40px !important;
+    box-shadow: none;
+}
+
+.contact tbody tr td {
+    text-align: center !important;
+}
+
+.foot > nav {
+    height: 20px !important;
+    float: left;
+    display: block;
+    background-color: rgba(0,0,0,0);
+    width: 250.9px;
+}
+
+.foot nav a {
+    font-size: 13px !important;
+}
+
+/** Other CSS **/
+
 #admin_filter, #example_length{
     display:none !important;
+}
+
+.username-search-holder {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+.username-search-holder > label {
+    left: 0px;
 }
 
 .dataTables_length {
@@ -24,6 +58,14 @@
 
 .admin-update {
     background-color: #86BD44 !important;
+    margin-top: 30px !important;
+    margin: auto !important;
+    display: inherit;
+    width: 400px;
+}
+
+.admin-cancel {
+    background-color: #FF7171 !important;
     margin-top: 30px !important;
     margin: auto !important;
     display: inherit;
