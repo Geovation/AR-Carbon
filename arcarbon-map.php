@@ -79,7 +79,7 @@ function run_arcarbon_map() {
 	// Overwrite the title for our page
 	add_filter('the_title', arcarbon_admin_title, 100);
 	function arcarbon_admin_title($title) {
-	  if( current_user_can( 'administrator' ) && is_page('Populate Map') && $title == 'Populate Map' ){
+	  if( current_user_can( 'administrator' ) && $title == 'Populate Map' ){
 		return "Admin Panel";
 	  }
 	  else {
@@ -135,14 +135,7 @@ function run_arcarbon_map() {
 				$geojson = "false"; // If it doesn't exist just make it false
 			}
 
-			// This would probably benefit from using json_encode rather string concat
-			// Return the JSON
-			echo '{ "headers" :'.$headers .
-				 ' , "geojson" : '.$geojson.
-				 ' , "id"    : "'. $user->ID         . '"'.
-				 ' , "email" : "'. $user->user_email . '"'.
-				 ' , "name"  : "'. $user->first_name . " " . $user->last_name . '"
-			  	}';
+			echo getUserData($user->ID, $geojson); // Return the JSON
 
 		}
 		else {
@@ -200,8 +193,7 @@ function run_arcarbon_map() {
 			}
 
 			$returnGeojson = json_encode($returnGeojson);
-			// Take the updated geojson and replace it with the old geojson
-			updateGeojson($farmer_id, $returnGeojson);
+			updateGeojson($farmer_id, $returnGeojson); // Take the updated geojson and replace it with the old geojson
 
 		}
 		else {
@@ -213,7 +205,6 @@ function run_arcarbon_map() {
 	function updateGeojson($farmer_id, $geojson) {
 
 		$updateGeojson = update_user_meta( $farmer_id, "arcarbon_map_geojson", $geojson );
-
 		$updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
 		$checkGeojson = get_user_meta($farmer_id,  "arcarbon_map_geojson", true );
 		$geojsonCheck = ( $checkGeojson == $geojson);
@@ -222,18 +213,23 @@ function run_arcarbon_map() {
 			echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
 		}
 		else {
-			// echo "{'success': 'Data posted to WP!'}";
-			$headers = get_option("arcarbon_headers");
-			$user = get_user_by("ID", $farmer_id);
-
-			echo '{ "headers" :'.$headers .
-				 ' , "geojson" : '.$geojson.
-				 ' , "id"    : "'. $user->ID         . '"'.
-				 ' , "email" : "'. $user->user_email . '"'.
-				 ' , "name"  : "'. $user->first_name . " " . $user->last_name . '"
-			  	}';
+			echo getUserData($farmer_id, $geojson);
 		}
+	}
 
+	function getUserData($farmer_id, $geojson) {
+		$headers = json_decode(get_option("arcarbon_headers"));
+		$geojson = json_decode($geojson);
+		$user = get_user_by("ID", $farmer_id);
+		return json_encode(
+				array(
+					"headers" => $headers,
+					"geojson" => $geojson,
+					"id"	  => $farmer_id,
+					"email"   => $user->user_email,
+					"name"    => $user->first_name . " " . $user->last_name
+				)
+			 );
 	}
 
 	function handleGeojson($geojson) {

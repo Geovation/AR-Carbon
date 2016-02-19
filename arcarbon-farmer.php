@@ -10,16 +10,15 @@
         <div>
             <div class="row">
                 <div class="col s12">
-                    <?php
-                        if (is_user_logged_in()) {
-                            echo "<h6> Welcome back  </h6>";
-                            echo "<h5>" . $current_user->user_firstname . " " . $current_user->user_lastname . "</h5>";
-                        }
-                        else {
-                            echo "<h6><h6><h5>Please Log In</h5>";
-                        }
-                    ?>
-
+                <?php
+                if (is_user_logged_in()) {
+                    echo "<h6> Welcome back  </h6>";
+                    echo "<h5>" . $current_user->user_firstname . " " . $current_user->user_lastname . "</h5>";
+                }
+                else {
+                    echo "<h6><h6><h5>Please Log In</h5>";
+                }
+                ?>
                 </div>
             </div>
 

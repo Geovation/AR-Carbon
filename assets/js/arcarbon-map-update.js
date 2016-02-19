@@ -45,6 +45,7 @@ jQuery(document).ready(function($) {
     			console.debug(data);
                 button.prop('disabled',true ); // Undo the button disabling
                 $('#submit').openModal();
+                USER_GEOJSON = geojson;
                 $('.leaflet-draw').hide();
                 // Give user feedback;
     		})

@@ -67,8 +67,8 @@ jQuery(document).ready(function($) {
             })
             .done(function(data) {
                 try {
-                    console.log(data);
                     data = JSON.parse(data);  // Parse the data
+                    console.log(data);
                     if (!data.name || data.name == " ") {
                         throw("No user was found under that username. Please check spelling.");
                     }
@@ -94,7 +94,7 @@ jQuery(document).ready(function($) {
         // Populate the tables with the Farmers field data and contact details
         hideError();
 
-        headers = data.headers;
+        var headers = data.headers;
         var geojson = data.geojson;
         var email   = data.email;
         var name    = data.name;
@@ -143,9 +143,6 @@ jQuery(document).ready(function($) {
         if (table) {
             table.destroy(); // If we had a previous table we must destroy it first
         }
-
-
-
 
         table = $('#admin').DataTable({
              " scrollX" : true,

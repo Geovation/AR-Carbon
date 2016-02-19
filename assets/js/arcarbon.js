@@ -50,6 +50,7 @@ jQuery(document).ready(function($) {
         totalHectares = 0.0,
         userFarm,
         deleting = false,
+        submitted = false,
         currentLayer,
         enableDraw = {
             polyline  : false,
@@ -378,9 +379,8 @@ jQuery(document).ready(function($) {
         $(domElement).css("background-color", "#ffffff");
         changeLabelSize(domElement, 12, 100);
 
-        // If we didn't gove over the 50 ha limit then we can label it
+        // If we didn't go over the 50 ha limit then we can label it
         checkTotalHectares(totalHectares, true);
-
 
     });
 
@@ -464,8 +464,8 @@ jQuery(document).ready(function($) {
                 iconSize: [110, 1]
             })
         }).addTo(map);
-        //.on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
-        //.on("click", function(){ populateFieldTextModal(layer); });
+        // .on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
+        // .on("click", function(){ populateFieldTextModal(layer); });
     }
 
     function getLabel(layer) {
@@ -483,7 +483,7 @@ jQuery(document).ready(function($) {
 
     function populateFieldTextModal(layer) {
         // Populate the modal for the layer
-
+        console.log("CLICKING");
         if (!deleting) {
 
             var title = layer._arcFieldTitle || "";
@@ -521,7 +521,7 @@ jQuery(document).ready(function($) {
             geojson.features.push(layerjson);
         });
         geojsonstr = JSON.stringify(geojson);
-        USER_GEOJSON = geojsonstr;
+        
         $(".ar-map-submit").attr("data-geojson", geojsonstr);
     }
 
