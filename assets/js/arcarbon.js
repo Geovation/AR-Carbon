@@ -107,6 +107,7 @@ jQuery(document).ready(function($) {
     L.control.locate({icon: 'fa fa-location-arrow'}).addTo(map);
 
     // If they have previous outlines, reinstatiate those
+
     if (USER_LOGGED_IN && USER_GEOJSON) {
         reinstantiateData(USER_GEOJSON);
     }
@@ -514,7 +515,7 @@ jQuery(document).ready(function($) {
         var layerjson;
         drawnItems.eachLayer(function(layer) {
             layerjson = layer.toGeoJSON();
-            layerjson.properties.arcarbon_farm_name = layer._arcFieldTitle;
+            layerjson.properties.arcarbon_field_name = layer._arcFieldTitle;
             layerjson.properties.arcarbon_area = layer._arcArea;
             layerjson.properties.arcarbon_description = layer._arcFieldDescription;
             geojson.features.push(layerjson);
@@ -533,9 +534,10 @@ jQuery(document).ready(function($) {
                 L.geoJson(geojson, {
                     onEachFeature: function(feature, layer) {
                         if (feature.properties) {
-                            layer._arcArea = feature.properties.area;
-                            layer._arcFieldTitle = feature.properties.title;
-                            layer._arcFieldDescription = feature.properties.description;
+                            var properties = feature.properties;
+                            layer._arcArea = properties.arcarbon_area;
+                            layer._arcFieldTitle = properties.arcarbon_field_name;
+                            layer._arcFieldDescription = properties.arcarbon_description;
                         }
                         if (feature.type == "Point") {
                             layer._arcIsFarmHome = true;
