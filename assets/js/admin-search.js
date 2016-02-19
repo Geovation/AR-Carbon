@@ -24,7 +24,6 @@ jQuery(document).ready(function($) {
     // Initialise
     var previousSearch; // Variable to store previous search
     var editableVars = "#admin tbody td input"; // Store the selector of our inputs that can change
-    $("#content > h1").text("Admin Panel"); // Replace the text content of the h1 tag. There is probably a better way with WP hooks that avoids content flash?
     $('.search-farmers').submit(function(e){ e.preventDefault(); }); // Prevent the page from refreshing
     addInputDataSorting(); // Inputs need to be sorted too!
 
@@ -119,10 +118,10 @@ jQuery(document).ready(function($) {
                 "<br><br><h5> Contact Details </h5>" +
                 "<table class='contact'>" +
                     "<thead class='contact-head'>" +
-                        "<th> Name </th>" +
-                        "<th> Email </th>" +
-                        "<th> Address </th>" +
-                        "<th> Phone </th>" +
+                        "<th><b> Name </b></th>" +
+                        "<th><b> Email </b></th>" +
+                        "<th><b> Address </b></th>" +
+                        "<th><b> Phone </b></th>" +
                     "</thead>" +
                     "<tbody>" +
                         "<td>" + name + "</td>" +
@@ -183,11 +182,12 @@ jQuery(document).ready(function($) {
 
         if (error.name === 'SyntaxError') {
             // If data (JSON) is invalid in some way
+            var msg = "<h6><b>There was a problem with the user data</b>:No fields exist for this user yet.</h6>";
             if ($(".error-holder").length) {
-                $(".error-holder").replaceWith("<h6>There was a problem with the user data: '"+error+"' <h6>");
+                $(".error-holder").replaceWith("<h6>There was a problem with the user data: '" + msg);
             }
             else {
-                $("#content-inner").append("<div class='error-holder'><h6>There was a problem with the user data: '"+error+"' <h6></div>");
+                $("#content-inner").append("<div class='error-holder'> '" + msg + "</div>");
             }
         }
         else {
