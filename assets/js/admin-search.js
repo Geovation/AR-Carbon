@@ -2,8 +2,6 @@ var table;
 
 jQuery(document).ready(function($) {
 
-
-
     // Console fallback
     window.console = window.console || {
         log: function () {},
@@ -22,15 +20,12 @@ jQuery(document).ready(function($) {
             complete: undefined,
      };
 
-
-
     // Initialise
     var lastLoadedData;
     var previousSearch; // Variable to store previous search
     var editableVars = "#admin tbody td input"; // Store the selector of our inputs that can change
     $("#content > h1").text("Admin Panel"); // Replace the text content of the h1 tag. There is probably a better way with WP hooks that avoids content flash?
     $('.search-farmers').submit(function(e){ e.preventDefault(); }); // Prevent the page from refreshing
-
 
     // Enable the update button on change to inputs
     $(document).on("change", editableVars, function(){

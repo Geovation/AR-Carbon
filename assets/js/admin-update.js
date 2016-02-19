@@ -18,7 +18,6 @@ jQuery(document).ready(function($) {
             complete: undefined,
      };
 
-
     function getChangedRows() {
         // Bring back a JSON object with all the cells with their changed values
 
