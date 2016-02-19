@@ -1,3 +1,5 @@
+var table;
+
 jQuery(document).ready(function($) {
 
     // Console fallback
@@ -18,29 +20,40 @@ jQuery(document).ready(function($) {
             complete: undefined,
      };
 
-    var previousSearch;
-
-     // Initialise
-    var table;
-    var editableVars = "#admin tbody td input";
-    $("#content > h1").text("Admin Panel");
-
-    $('.search-farmers').submit(function(e){
-        e.preventDefault();
-    });
+    // Initialise
+    var lastLoadedData;
+    var previousSearch; // Variable to store previous search
+    var editableVars = "#admin tbody td input"; // Store the selector of our inputs that can change
+    $("#content > h1").text("Admin Panel"); // Replace the text content of the h1 tag. There is probably a better way with WP hooks that avoids content flash?
+    $('.search-farmers').submit(function(e){ e.preventDefault(); }); // Prevent the page from refreshing
 
     // Enable the update button on change to inputs
     $(document).on("change", editableVars, function(){
+        $(this).val(this.value);
         $(".admin-update").prop("disabled", false);
+        $(".admin-cancel").prop("disabled", false);
+    });
+
+    // Open up the confirmation modal on click
+    $(document).on("click", ".admin-cancel", function() {  // Add confirmation modal
+        $("#cancel-submit").openModal(modalOptions);
+    });
+    // On confirm reload the table to it's previous state
+    $( document ).on( 'click', '.admin-cancel-confirm', function() {
+        populateDataTables(lastLoadedData);
+        $(".admin-cancel").prop("disabled", true);
+        $(".admin-update").prop("disabled", true);
     });
 
     // Open up the confirmation modal on click
     $(document).on("click", ".admin-update", function() {  // Add confirmation modal
         $("#update-submit").openModal(modalOptions);
     });
+    // Update confirm handler is in admin-update.js
 
+    // Handle the user searching for farmers
     $("#username-search").keypress(function(e) {
-        var differentSearch = this.value != previousSearch;
+        var differentSearch = this.value != previousSearch; // Lets check to see if it's the same search
         if(e.which == 13 && differentSearch) { // If user presses enter and not blank
 
         	$.ajax({
@@ -53,12 +66,13 @@ jQuery(document).ready(function($) {
             })
             .done(function(data) {
                 try {
-
-                    data = JSON.parse(data);
+                    data = JSON.parse(data);  // Parse the data
                     if (!data.name || data.name == " ") {
                         throw("No user was found under that username. Please check spelling.");
                     }
                     else {
+                        lastLoadedData = data;
+                        setFarmerId(data.id);
             			populateDataTables(data);
                     }
                 }
@@ -76,21 +90,23 @@ jQuery(document).ready(function($) {
 
     function populateDataTables(data) {
         // Populate the tables with the Farmers field data and contact details
-
+        console.log(data);
         hideError();
-        showTable();
 
+        headers = data.headers;
         var geojson = data.geojson;
-        var headers = data.headers;
         var email   = data.email;
         var name    = data.name;
         var rows;
 
         // Loop through all fields and make a new row for each
         if (geojson.features) {
+            console.log("Empyt it");
+            $("#admin tbody").remove();
+            $("#admin thead").after("<tbody></tbody>");
             for (var j =0; j < geojson.features.length; j++) {
                 rows = '<tr>';
-                $("thead th").each(handleFeatures);
+                $("#admin thead th").each(handleFeatures);
                 rows += '</tr>';
                 $("#admin tbody").append(rows);
             }
@@ -129,20 +145,20 @@ jQuery(document).ready(function($) {
         }
         table = $('#admin').DataTable({ " scrollX" : true }); // Init the table
 
+        showTable(); // Show the finished table
+
         function handleFeatures(i, th) {
             // Loop through all features and create the cells/rows for each
-
             var head = $(th).text();
             var key  = getObjectKey(headers, head);
             var feature = geojson.features[j];
             if (key && feature.properties[key]) { // If the text in the header matches a value in our headers
-                rows += '<td><input type="text" value='+feature.properties[key]+'></td>';
+                rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
             }
             else {
                 rows += '<td><input type="text" value=""> </td>';
             }
         }
-
     }
 
     function handleFailure(error) {
@@ -170,13 +186,17 @@ jQuery(document).ready(function($) {
                 $("#content-inner").append("<div class='error-holder'><h6>"+error+" <h6></div>");
             }
         }
+    }
 
+    // Convenience functions
 
+    function setFarmerId(id) {
+        // Set the farmers ID in the #admin data
+        $("#admin").data("farmerid", id);
     }
 
     function getObjectKey( obj, value ) {
         // Find out the key of a specific value - we need this to check master name for row headers
-
         for( var prop in obj ) {
             if( obj.hasOwnProperty( prop ) ) {
                  if( obj[ prop ] === value )
@@ -185,7 +205,6 @@ jQuery(document).ready(function($) {
         }
     }
 
-    // Convience functions
     function hideError() {
         $(".error-holder").hide();
     }
