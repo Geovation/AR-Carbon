@@ -1,4 +1,5 @@
 var table;
+var lastLoadedData;
 
 jQuery(document).ready(function($) {
 
@@ -21,7 +22,6 @@ jQuery(document).ready(function($) {
      };
 
     // Initialise
-    var lastLoadedData;
     var previousSearch; // Variable to store previous search
     var editableVars = "#admin tbody td input"; // Store the selector of our inputs that can change
     $("#content > h1").text("Admin Panel"); // Replace the text content of the h1 tag. There is probably a better way with WP hooks that avoids content flash?
@@ -40,6 +40,7 @@ jQuery(document).ready(function($) {
     });
     // On confirm reload the table to it's previous state
     $( document ).on( 'click', '.admin-cancel-confirm', function() {
+        console.log("onClick lastloaded data", lastLoadedData);
         populateDataTables(lastLoadedData);
         $(".admin-cancel").prop("disabled", true);
         $(".admin-update").prop("disabled", true);
@@ -66,6 +67,7 @@ jQuery(document).ready(function($) {
             })
             .done(function(data) {
                 try {
+                    console.log(data);
                     data = JSON.parse(data);  // Parse the data
                     if (!data.name || data.name == " ") {
                         throw("No user was found under that username. Please check spelling.");
@@ -90,7 +92,6 @@ jQuery(document).ready(function($) {
 
     function populateDataTables(data) {
         // Populate the tables with the Farmers field data and contact details
-        console.log(data);
         hideError();
 
         headers = data.headers;
@@ -101,7 +102,6 @@ jQuery(document).ready(function($) {
 
         // Loop through all fields and make a new row for each
         if (geojson.features) {
-            console.log("Empyt it");
             $("#admin tbody").remove();
             $("#admin thead").after("<tbody></tbody>");
             for (var j =0; j < geojson.features.length; j++) {

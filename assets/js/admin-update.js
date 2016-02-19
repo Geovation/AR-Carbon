@@ -76,7 +76,12 @@ jQuery(document).ready(function($) {
                 data   : data
             })
             .done(function(response) {
-                button.prop('disabled', false ); // Undo the button disabling
+                //console.log(response);
+                lastLoadedData = JSON.parse(response);
+                console.log("After update lastLoadedData", lastLoadedData);
+                $(".admin-cancel").prop("disabled", true);
+                $(".admin-update").prop("disabled", true);
+                //button.prop('disabled', false ); // Undo the button disabling
                 // Give user feedback ?
     		})
             .fail(function() {
