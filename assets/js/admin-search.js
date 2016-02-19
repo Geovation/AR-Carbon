@@ -26,6 +26,7 @@ jQuery(document).ready(function($) {
     var editableVars = "#admin tbody td input"; // Store the selector of our inputs that can change
     $("#content > h1").text("Admin Panel"); // Replace the text content of the h1 tag. There is probably a better way with WP hooks that avoids content flash?
     $('.search-farmers').submit(function(e){ e.preventDefault(); }); // Prevent the page from refreshing
+    addInputDataSorting(); // Inputs need to be sorted too!
 
     // Enable the update button on change to inputs
     $(document).on("change", editableVars, function(){
@@ -143,7 +144,20 @@ jQuery(document).ready(function($) {
         if (table) {
             table.destroy(); // If we had a previous table we must destroy it first
         }
-        table = $('#admin').DataTable({ " scrollX" : true }); // Init the table
+
+
+
+
+        table = $('#admin').DataTable({
+             " scrollX" : true,
+             "columnDefs": [
+                {
+                    "orderDataType": "dom-input",
+                    "type": 'string',
+                    "targets": '_all'
+                }
+            ]
+        }); // Init the table
 
         showTable(); // Show the finished table
 
@@ -221,4 +235,14 @@ jQuery(document).ready(function($) {
         $("#admin-holder").show();
         $(".contact-details").show();
     }
+
+    function addInputDataSorting() {
+        $.fn.dataTable.ext.order['dom-input'] = function (settings, col) {
+            return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+                console.log($('input', td).val());
+                return $('input', td).val();
+            } );
+        };
+    }
+
 });
