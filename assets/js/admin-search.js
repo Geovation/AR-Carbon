@@ -105,10 +105,12 @@ jQuery(document).ready(function($) {
             $("#admin tbody").remove();
             $("#admin thead").after("<tbody></tbody>");
             for (var j =0; j < geojson.features.length; j++) {
-                rows = '<tr>';
-                $("#admin thead th").each(handleFeatures);
-                rows += '</tr>';
-                $("#admin tbody").append(rows);
+                if (geojson.features[j].geometry.type === "Polygon") { // Make sure it's a field polygon
+                    rows = '<tr>';
+                    $("#admin thead th").each(handleFeatures);
+                    rows += '</tr>';
+                    $("#admin tbody").append(rows);
+                }
             }
         }
 
@@ -145,7 +147,7 @@ jQuery(document).ready(function($) {
         }
 
         table = $('#admin').DataTable({
-             " scrollX" : true,
+             //"scrollX" : true,
              "columnDefs": [
                 {
                     "orderDataType": "dom-input",
@@ -162,8 +164,15 @@ jQuery(document).ready(function($) {
             var head = $(th).text();
             var key  = getObjectKey(headers, head);
             var feature = geojson.features[j];
+
             if (key && feature.properties[key]) { // If the text in the header matches a value in our headers
-                rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
+                if (key === "arcarbon_field_name") {
+                    rows += '<td class="field-name-col">'+feature.properties[key]+'</td>';
+                }
+                else {
+                    rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
+                }
+
             }
             else {
                 rows += '<td><input type="text" value=""> </td>';
@@ -177,24 +186,23 @@ jQuery(document).ready(function($) {
         hideTable(); // Hide the table
         showError(); // Show Error
 
+        var msg1 = "<h6><b>There was a problem with the user data</b>: No fields exist for this user yet.</h6>";
+        var msg2 = "<h6><b>There was a problem with the user data</b>: User was not found.</h6>";
+
         if (error.name === 'SyntaxError' || error.name === 'TypeError' ) {
-            // If data (JSON) is invalid in some way
-            var msg = "<h6><b>There was a problem with the user data</b>: No fields exist for this user yet.</h6>";
-            if ($(".error-holder").length) {
-                $(".error-holder").replaceWith("<h6>There was a problem with the user data: " + msg);
-            }
-            else {
-                $("#content-inner").append("<div class='error-holder'> " + msg + "</div>");
-            }
+            _appendError(msg1); // If data (JSON) is invalid in some way
         }
         else {
-            // If user is not found
+            _appendError(msg2); // If user is not found
+        }
+
+        function _appendError(msg) {
             if ($(".error-holder").length) {
-                $(".error-holder").replaceWith("<div class='error-holder'><h6>"+error+"<h6></div>");
+                $(".error-holder").replaceWith("<div class='error-holder'>"+msg+"</div>");
             }
             else {
 
-                $("#content-inner").append("<div class='error-holder'><h6>"+error+" <h6></div>");
+                $("#content-inner").append("<div class='error-holder'>"+msg+"</div>");
             }
         }
     }
@@ -236,8 +244,10 @@ jQuery(document).ready(function($) {
     function addInputDataSorting() {
         $.fn.dataTable.ext.order['dom-input'] = function (settings, col) {
             return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
-                console.log($('input', td).val());
-                return $('input', td).val();
+
+                var val = $('input', td).val() || $(td).text();
+                console.log(val);
+                return val;
             } );
         };
     }
