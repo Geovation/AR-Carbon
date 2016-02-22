@@ -244,9 +244,7 @@ jQuery(document).ready(function($) {
     function addInputDataSorting() {
         $.fn.dataTable.ext.order['dom-input'] = function (settings, col) {
             return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
-
                 var val = $('input', td).val() || $(td).text();
-                console.log(val);
                 return val;
             } );
         };

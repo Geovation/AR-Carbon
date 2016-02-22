@@ -78,7 +78,6 @@ jQuery(document).ready(function($) {
             .done(function(response) {
                 //console.log(response);
                 lastLoadedData = JSON.parse(response);
-                console.log("After update lastLoadedData", lastLoadedData);
                 $(".admin-cancel").prop("disabled", true);
                 $(".admin-update").prop("disabled", true);
                 //button.prop('disabled', false ); // Undo the button disabling
@@ -90,7 +89,6 @@ jQuery(document).ready(function($) {
           });
         }
         else {
-            console.log("something went wrong L o L b");
             //$('#submit-error').openModal(modalOptions); // Show an error messag
             button.prop('disabled',false); // Undo the button disabling
         }

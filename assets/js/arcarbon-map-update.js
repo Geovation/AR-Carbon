@@ -41,8 +41,6 @@ jQuery(document).ready(function($) {
                 data : data
             })
             .done(function() {
-                console.debug("Data posted");
-    			console.debug(data);
                 button.prop('disabled',true ); // Undo the button disabling
                 $('#submit').openModal();
                 USER_GEOJSON = geojson;
