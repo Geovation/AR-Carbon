@@ -5,6 +5,12 @@ nav {
     box-shadow: none;
 }
 
+.field-name-col {
+    padding: 20px;
+    width: 100px;
+    text-align: center;
+}
+
 .contact tbody tr td {
     text-align: center !important;
 }

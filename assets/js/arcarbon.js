@@ -157,7 +157,7 @@ jQuery(document).ready(function($) {
             setLabel(layer, fieldTitle); // Also adds click and mouseover listners
 
             // Set the colour and add the layer to the list of drawn layers
-            layer.setStyle({fillColor: '#15693b', color: '#15693b'});
+            layer.setStyle({fillColor: '#86bd44', color: '#15693b'});
             drawnItems.addLayer(layer);
 
             addLayerMouseOver(layer, layer._arcDomElement); // Add the leaflet layer mouse over / dom layer highlight effect
@@ -521,7 +521,7 @@ jQuery(document).ready(function($) {
             geojson.features.push(layerjson);
         });
         geojsonstr = JSON.stringify(geojson);
-        
+
         $(".ar-map-submit").attr("data-geojson", geojsonstr);
     }
 
