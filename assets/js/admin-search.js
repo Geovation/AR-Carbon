@@ -48,7 +48,6 @@ jQuery(document).ready(function($) {
 
     // Open up the confirmation modal on click
     $(document).on("click", ".admin-update", function() {  // Add confirmation modal
-        $("admin-update-confirm").focus();
         $("#update-submit").openModal(modalOptions);
     });
     // Update confirm handler is in admin-update.js
