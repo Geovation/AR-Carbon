@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.16
+ * Version:           1.0.18
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -46,11 +46,18 @@ function run_arcarbon_map() {
 			if (current_user_can( 'administrator' )) {
 				wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
 				wp_enqueue_script( 'tables', plugins_url( '/assets/js/jquery.dataTables.min.js', __FILE__ ), array('jquery') );
+				wp_enqueue_script( 'typeahead', plugins_url( '/assets/js/jquery-ui.min.js', __FILE__ ), array('jquery') );
 
-				wp_enqueue_script( 'arcarbon_admin_search',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
-				wp_localize_script( 'arcarbon_admin_search', 'update', array(
+				wp_enqueue_script( 'arcarbon_admin_typeahead',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
+				wp_localize_script( 'arcarbon_admin_typeahead', 'update', array(
 					'ajax_url' => admin_url( 'admin-ajax.php' )
 				));
+
+				wp_enqueue_script( 'arcarbon_admin_retrieve',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
+				wp_localize_script( 'arcarbon_admin_retrieve', 'update', array(
+					'ajax_url' => admin_url( 'admin-ajax.php' )
+				));
+
 				wp_enqueue_script( 'arcarbon_admin_update',  plugins_url( '/assets/js/admin-update.js', __FILE__ ), array('jquery') );
 				wp_localize_script( 'arcarbon_admin_update', 'update', array(
 					'ajax_url' => admin_url( 'admin-ajax.php' )
@@ -121,22 +128,41 @@ function run_arcarbon_map() {
 		}
 	}
 
-	add_action( 'wp_ajax_nopriv_arcarbon_admin_search', 'arcarbon_admin_search' );
-	add_action( 'wp_ajax_arcarbon_admin_search', 'arcarbon_admin_search' );
-	function arcarbon_admin_search() {
+	//add_action( 'wp_ajax_nopriv_arcarbon_admin_retrieve', 'arcarbon_admin_retrieve' );
+	add_action( 'wp_ajax_arcarbon_admin_retrieve', 'arcarbon_admin_retrieve' );
+	function arcarbon_admin_retrieve() {
 
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
 
-			$username = $_POST['username'];
-			$user = get_userdatabylogin($username);
-			$geojson = get_user_meta($user->ID, "arcarbon_map_geojson", true );
+			$id = $_POST['id'];
+			$geojson = get_user_meta($id, "arcarbon_map_geojson", true );
 			$headers = get_option("arcarbon_headers");
 			if (gettype($geojson) == boolean ) {
 				$geojson = "false"; // If it doesn't exist just make it false
 			}
 
-			echo getUserData($user->ID, $geojson); // Return the JSON
+			echo getUserData($id, $geojson); // Return the JSON
 
+		}
+		else {
+			echo "{'error', 'Something went wrong'}";
+		}
+		die();
+	}
+
+	add_action( 'wp_ajax_nopriv_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
+	add_action( 'wp_ajax_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
+	function arcarbon_admin_typeahead() {
+
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
+			$users = get_users(array('fields'=>'all'));
+			$farmers = array();
+			foreach ($users as $key=>$farmer ) {
+				$farmers[$key]["Name"]  = $farmer->data->display_name;
+	            $farmers[$key]["ID"]    = $farmer->data->ID;
+	            $farmers[$key]["Email"] = $farmer->data->user_email;
+			}
+			echo json_encode($farmers);
 		}
 		else {
 			echo "{'error', 'Something went wrong'}";
@@ -187,8 +213,10 @@ function run_arcarbon_map() {
 
 				$field_name = $field["properties"]["arcarbon_field_name"];
 				$changed_field = $changed_fields[$field_name]; // Get the update properties assoc array
-				foreach ($changed_field as $changed_key => $changed_val) {
-					$returnGeojson["features"][$key]["properties"][$changed_key] = $changed_val; // Take the geojson assoc array and replace the necessary val
+				if (is_array($changed_field) || is_object($changed_field)) {
+					foreach ($changed_field as $changed_key => $changed_val) {
+						$returnGeojson["features"][$key]["properties"][$changed_key] = $changed_val; // Take the geojson assoc array and replace the necessary val
+					}
 				}
 			}
 

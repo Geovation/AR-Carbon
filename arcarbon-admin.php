@@ -1,4 +1,5 @@
 <link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
+<link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery-ui.min.css" ?>">
 <link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery.dataTables.min.css" ?>">
 <link rel="stylesheet" type='text/css' href="<?php echo $css . "admin.css" ?>">
 
@@ -33,11 +34,11 @@
 ?>
 
 <div class="row ar-map-full">
-   <form class="search-farmers">
+   <form class="search-farmers"  autocomplete="off" >
     <div class="row">
        <div class="input-field col s12 username-search-holder">
-         <input id="username-search" type="text" class="validate">
-         <label for="username-search">Username</label>
+         <input id="username-search" class="validate typahead" type="text" data-provide="typeahead" autocomplete="off" disabled>
+         <label for="username-search">Name, ID or Email</label>
        </div>
      </div>
    </div>
@@ -87,6 +88,17 @@
 <div class="modal-footer">
   <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">No, I don't want to do that</a>
   <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Yes, cancel my changes</a>
+</div>
+</div>
+
+<!-- Submit button confirm Modal Structure -->
+<div id="admin-error" class="modal">
+<div class="modal-content">
+  <h4>Oh No! Something has gone wrong!</h4>
+  <p>Something didn't quite go to plan. One possible reason is your network connection is down.</p>
+</div>
+<div class="modal-footer">
+  <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Okay</a>
 </div>
 </div>
 
