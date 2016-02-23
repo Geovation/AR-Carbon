@@ -1,4 +1,5 @@
 <link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
+<link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery-ui.min.css" ?>">
 <link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery.dataTables.min.css" ?>">
 <link rel="stylesheet" type='text/css' href="<?php echo $css . "admin.css" ?>">
 
@@ -33,11 +34,11 @@
 ?>
 
 <div class="row ar-map-full">
-   <form class="search-farmers">
+   <form class="search-farmers"  autocomplete="off" >
     <div class="row">
        <div class="input-field col s12 username-search-holder">
-         <input id="username-search" type="text" class="validate">
-         <label for="username-search">Username</label>
+         <input id="username-search" class="validate typahead" type="text" data-provide="typeahead" autocomplete="off" disabled>
+         <label for="username-search">Username or ID</label>
        </div>
      </div>
    </div>
