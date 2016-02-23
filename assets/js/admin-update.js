@@ -51,7 +51,6 @@ jQuery(document).ready(function($) {
         // When the user confirms changes
 
         var button = $(".admin-update");
-        console.log(getChangedRows());
         var data = {
             action         : 'admin_update',
             changed_fields : getChangedRows(),
@@ -69,20 +68,19 @@ jQuery(document).ready(function($) {
                 data   : data
             })
             .done(function(response) {
-                //console.log(response);
+
                 lastLoadedData = JSON.parse(response);
                 $(".admin-cancel").prop("disabled", true);
                 $(".admin-update").prop("disabled", true);
-                //button.prop('disabled', false ); // Undo the button disabling
-                // Give user feedback ?
+
     		})
             .fail(function() {
-              //$('#submit-error').openModal(modalOptions);
+              $('#admin-error').openModal(modalOptions);
               button.prop('disabled',false); // Undo the button disabling
           });
         }
         else {
-            //$('#submit-error').openModal(modalOptions); // Show an error messag
+            $('#admin-error').openModal(modalOptions);
             button.prop('disabled',false); // Undo the button disabling
         }
 

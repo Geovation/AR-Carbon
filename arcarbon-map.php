@@ -155,9 +155,14 @@ function run_arcarbon_map() {
 	function arcarbon_admin_typeahead() {
 
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
-
-			echo json_encode(get_users(array('fields'=>'all')));
-
+			$users = get_users(array('fields'=>'all'));
+			$farmers = array();
+			foreach ($users as $key=>$farmer ) {
+				$farmers[$key]["Name"]  = $farmer->data->display_name;
+	            $farmers[$key]["ID"]    = $farmer->data->ID;
+	            $farmers[$key]["Email"] = $farmer->data->user_email;
+			}
+			echo json_encode($farmers);
 		}
 		else {
 			echo "{'error', 'Something went wrong'}";

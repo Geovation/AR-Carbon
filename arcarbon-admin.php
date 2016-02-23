@@ -91,4 +91,15 @@
 </div>
 </div>
 
+<!-- Submit button confirm Modal Structure -->
+<div id="admin-error" class="modal">
+<div class="modal-content">
+  <h4>Oh No! Something has gone wrong!</h4>
+  <p>Something didn't quite go to plan. One possible reason is your network connection is down.</p>
+</div>
+<div class="modal-footer">
+  <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Okay</a>
+</div>
+</div>
+
 <?php
