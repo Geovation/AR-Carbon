@@ -3,7 +3,6 @@ var lastLoadedData;
 
 jQuery(document).ready(function($) {
 
-
     // Console fallback
     window.console = window.console || {
         log: function () {},
@@ -14,12 +13,12 @@ jQuery(document).ready(function($) {
 
     // Set modal options
     var modalOptions = {
-            dismissible: true,
-            opacity: 0.5,
-            in_duration: 350,
-            out_duration: 250,
-            ready: undefined,
-            complete: undefined
+        dismissible: true,
+        opacity: 0.5,
+        in_duration: 350,
+        out_duration: 250,
+        ready: undefined,
+        complete: function() { $('.lean-overlay').remove(); } // Hack
      };
 
     // Initialise
@@ -49,6 +48,7 @@ jQuery(document).ready(function($) {
 
     // Open up the confirmation modal on click
     $(document).on("click", ".admin-update", function() {  // Add confirmation modal
+        $("admin-update-confirm").focus();
         $("#update-submit").openModal(modalOptions);
     });
     // Update confirm handler is in admin-update.js
@@ -94,9 +94,9 @@ jQuery(document).ready(function($) {
                 $.each(farmer, function(key, val) {
                     if (val.indexOf(term) !== -1) {
                         matching.push({
-                                        "label" : farmer.Name + " ( " + key + " : " + val + " )",
-                                        "value" : farmer.ID
-                                    });
+                            "label" : farmer.Name + " ( " + key + " : " + val + " )",
+                            "value" : farmer.ID
+                        });
                     }
                 });
             });

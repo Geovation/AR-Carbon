@@ -208,8 +208,10 @@ function run_arcarbon_map() {
 
 				$field_name = $field["properties"]["arcarbon_field_name"];
 				$changed_field = $changed_fields[$field_name]; // Get the update properties assoc array
-				foreach ($changed_field as $changed_key => $changed_val) {
-					$returnGeojson["features"][$key]["properties"][$changed_key] = $changed_val; // Take the geojson assoc array and replace the necessary val
+				if (is_array($changed_field) || is_object($changed_field)) {
+					foreach ($changed_field as $changed_key => $changed_val) {
+						$returnGeojson["features"][$key]["properties"][$changed_key] = $changed_val; // Take the geojson assoc array and replace the necessary val
+					}
 				}
 			}
 
