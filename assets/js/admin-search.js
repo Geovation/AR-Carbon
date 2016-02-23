@@ -98,7 +98,6 @@ jQuery(document).ready(function($) {
     });
     // On confirm reload the table to it's previous state
     $( document ).on( 'click', '.admin-cancel-confirm', function() {
-        console.log("onClick lastloaded data", lastLoadedData);
         populateDataTables(lastLoadedData);
         $(".admin-cancel").prop("disabled", true);
         $(".admin-update").prop("disabled", true);
@@ -245,7 +244,6 @@ jQuery(document).ready(function($) {
             _appendError(msg1); // If data (JSON) is invalid in some way
         }
         else {
-            console.log(error);
             _appendError(msg2); // If user is not found
         }
 
