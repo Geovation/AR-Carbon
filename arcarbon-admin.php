@@ -38,7 +38,7 @@
     <div class="row">
        <div class="input-field col s12 username-search-holder">
          <input id="username-search" class="validate typahead" type="text" data-provide="typeahead" autocomplete="off" disabled>
-         <label for="username-search">Username or ID</label>
+         <label for="username-search">Name, ID or Email</label>
        </div>
      </div>
    </div>
