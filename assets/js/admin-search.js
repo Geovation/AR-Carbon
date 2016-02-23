@@ -14,12 +14,12 @@ jQuery(document).ready(function($) {
 
     // Set modal options
     var modalOptions = {
-            dismissible: false,
+            dismissible: true,
             opacity: 0.5,
             in_duration: 350,
             out_duration: 250,
             ready: undefined,
-            complete: undefined,
+            complete: undefined
      };
 
     // Initialise
@@ -106,9 +106,9 @@ jQuery(document).ready(function($) {
             });
             response(matching);
         }
-        console.log($("#username-search").prop("disabled"))
-        $("#username-search").prop("disabled", false);
-        console.log($("#username-search").prop("disabled"))
+
+        $("#username-search").prop("disabled", false); // Enable input after the data has loaded :)
+
 
      })
      .fail(function() {
