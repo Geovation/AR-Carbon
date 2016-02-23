@@ -8,16 +8,6 @@ jQuery(document).ready(function($) {
         warn: function () {}
     };
 
-    // Modal Options for the modal popup
-    var modalOptions = {
-            dismissible: false,
-            opacity: 0.5,
-            in_duration: 350,
-            out_duration: 250,
-            ready: undefined,
-            complete: undefined,
-     };
-
     function getChangedRows() {
         // Bring back a JSON object with all the cells with their changed values
 
@@ -46,7 +36,9 @@ jQuery(document).ready(function($) {
 
     function getCellValue(i, j) {
         // Return a cells value based on it's row and column Number
-        return $(table.cell({row : i, column : j}).node()).find("input").val();
+        var node = $(table.cell({row : i, column : j}).node());
+        var val = node.find("input").val() || node.text();
+        return val;
     }
 
     function getCellKey(j) {
@@ -59,6 +51,7 @@ jQuery(document).ready(function($) {
         // When the user confirms changes
 
         var button = $(".admin-update");
+        console.log(getChangedRows());
         var data = {
             action         : 'admin_update',
             changed_fields : getChangedRows(),

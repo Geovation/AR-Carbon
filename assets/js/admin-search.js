@@ -13,12 +13,12 @@ jQuery(document).ready(function($) {
 
     // Set modal options
     var modalOptions = {
-            dismissible: false,
-            opacity: 0.5,
-            in_duration: 350,
-            out_duration: 250,
-            ready: undefined,
-            complete: undefined,
+        dismissible: true,
+        opacity: 0.5,
+        in_duration: 350,
+        out_duration: 250,
+        ready: undefined,
+        complete: function() { $('.lean-overlay').remove(); } // Hack
      };
 
     // Initialise
@@ -52,39 +52,100 @@ jQuery(document).ready(function($) {
     });
     // Update confirm handler is in admin-update.js
 
+
+    $.ajax({
+         url: update.ajax_url,
+         type : 'post',
+         data : {
+             action   : 'arcarbon_admin_typeahead',
+             username : $("#username-search").val()
+         }
+    })
+    .done(function(data) {
+
+        var userData = JSON.parse(data);  // Parse the data
+        userData = $.map(userData, function (n, i) {
+            var farmer = {};
+            farmer.Name = n.data.display_name;
+            farmer.ID  = n.data.ID;
+            farmer.Email = n.data.user_email;
+            return farmer;
+        });
+
+        $('#username-search').autocomplete({
+            minLength: 1, // This shows the min length of charcters that must be typed before the autocomplete looks for a match.
+            source: typeaheadSource,
+            focus: function(event, ui) {
+                //$('#username-search').val(ui.item.name);
+                return false;
+            },
+            select: function(event, ui) {   // Once a value in the drop down list is selected, do the following:
+                var id = ui.item.value;
+                getUserData(id);
+                return false;
+            }
+        });
+
+        function typeaheadSource(request, response) {
+            var term = request.term;
+            var matching = [];
+            $.each(userData, function(i, farmer){
+                $.each(farmer, function(key, val) {
+                    if (val.indexOf(term) !== -1) {
+                        matching.push({
+                            "label" : farmer.Name + " ( " + key + " : " + val + " )",
+                            "value" : farmer.ID
+                        });
+                    }
+                });
+            });
+            response(matching);
+        }
+
+        $("#username-search").prop("disabled", false); // Enable input after the data has loaded :)
+
+
+     })
+     .fail(function() {
+       //button.prop('disabled',false); // Undo the button disabling
+     });
+
+     function getUserData(id) {
+
+         $.ajax({
+             url: update.ajax_url,
+             type : 'post',
+             data : {
+                 action : 'arcarbon_admin_retrieve',
+                 id     : id
+             }
+         })
+         .done(function(data) {
+             try {
+                 data = JSON.parse(data);
+                 if (!data.name || data.name == " ") {
+                     throw("No user was found under that username. Please check spelling.");
+                 }
+                 else {
+                    lastLoadedData = data;
+                    setFarmerId(data.id);
+                    populateDataTables(data);
+                 }
+             }
+             catch (e) {
+                 handleFailure(e);
+             }
+
+         })
+         .fail(function() {
+           //button.prop('disabled',false); // Undo the button disabling
+         });
+    }
+
     // Handle the user searching for farmers
     $("#username-search").keypress(function(e) {
         var differentSearch = this.value != previousSearch; // Lets check to see if it's the same search
         if(e.which == 13 && differentSearch) { // If user presses enter and not blank
-
-        	$.ajax({
-        		url: update.ajax_url,
-                type : 'post',
-                data : {
-                    action   : 'arcarbon_admin_search',
-                    username : $("#username-search").val()
-                }
-            })
-            .done(function(data) {
-                try {
-                    data = JSON.parse(data);  // Parse the data
-                    console.log(data);
-                    if (!data.name || data.name == " ") {
-                        throw("No user was found under that username. Please check spelling.");
-                    }
-                    else {
-                        lastLoadedData = data;
-                        setFarmerId(data.id);
-            			populateDataTables(data);
-                    }
-                }
-                catch (e) {
-                    handleFailure(e);
-                }
-    		})
-            .fail(function() {
-              //button.prop('disabled',false); // Undo the button disabling
-          });
           previousSearch = this.value;
         }
 
@@ -107,7 +168,7 @@ jQuery(document).ready(function($) {
             for (var j =0; j < geojson.features.length; j++) {
                 if (geojson.features[j].geometry.type === "Polygon") { // Make sure it's a field polygon
                     rows = '<tr>';
-                    $("#admin thead th").each(handleFeatures);
+                    $("#admin thead th").each(handleFeatures); // Does this need to be in a function?
                     rows += '</tr>';
                     $("#admin tbody").append(rows);
                 }
@@ -193,6 +254,7 @@ jQuery(document).ready(function($) {
             _appendError(msg1); // If data (JSON) is invalid in some way
         }
         else {
+            console.log(error);
             _appendError(msg2); // If user is not found
         }
 
