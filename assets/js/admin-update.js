@@ -76,7 +76,7 @@ jQuery(document).ready(function($) {
                 data   : data
             })
             .done(function(response) {
-                //console.log(response);
+                console.log(response);
                 lastLoadedData = JSON.parse(response);
                 $(".admin-cancel").prop("disabled", true);
                 $(".admin-update").prop("disabled", true);

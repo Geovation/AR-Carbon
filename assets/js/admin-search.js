@@ -63,9 +63,8 @@ jQuery(document).ready(function($) {
          }
     })
     .done(function(data) {
-         //try {
 
-        userData = JSON.parse(data);  // Parse the data
+        var userData = JSON.parse(data);  // Parse the data
         userData = $.map(userData, function (n, i) {
             var farmer = {};
             farmer.Name = n.data.display_name;
@@ -82,10 +81,7 @@ jQuery(document).ready(function($) {
                 return false;
             },
             select: function(event, ui) {   // Once a value in the drop down list is selected, do the following:
-                //$("#username-search").val(ui.item.label);
-                console.log(ui, event);
                 var id = ui.item.value;
-                console.log(id);
                 getUserData(id);
                 return false;
             }

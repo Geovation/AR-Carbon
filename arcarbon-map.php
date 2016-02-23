@@ -128,7 +128,7 @@ function run_arcarbon_map() {
 		}
 	}
 
-	add_action( 'wp_ajax_nopriv_arcarbon_admin_retrieve', 'arcarbon_admin_retrieve' );
+	//add_action( 'wp_ajax_nopriv_arcarbon_admin_retrieve', 'arcarbon_admin_retrieve' );
 	add_action( 'wp_ajax_arcarbon_admin_retrieve', 'arcarbon_admin_retrieve' );
 	function arcarbon_admin_retrieve() {
 
