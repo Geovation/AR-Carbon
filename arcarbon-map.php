@@ -36,6 +36,20 @@ include 'map-options.php';
 
 function run_arcarbon_map() {
 
+
+	// SCRIPT ENQUEUING AND LOCALIZATION
+
+	function localize($service) {
+		// Localize a AJAX Script
+		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
+		wp_localize_script( $service, 'update', $admin_ajax_url);
+	}
+
+	function enqueue($script, $file) {
+		// Enqueue an AJAX script
+		wp_enqueue_script( $script, plugins_url( "/assets/js/" . $file, __FILE__ ), array('jquery') );
+	}
+
 	// Load in all the necessary JavaScript
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts');
 	function enqueue_scripts() {
@@ -80,22 +94,11 @@ function run_arcarbon_map() {
 				));
 			}
 		}
-
-
 	}
 
-	function localize($service) {
-		// Localize a AJAX Script
-		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
-		wp_localize_script( $service, 'update', $admin_ajax_url);
-	}
-
-	function enqueue($script, $file) {
-		// Enqueue an AJAX script
-		wp_enqueue_script( $script, plugins_url( "/assets/js/" . $file, __FILE__ ), array('jquery') );
-	}
-
+	// Reusable JSON AJAX messages
 	$error_message = json_encode(array("error" => "Something went wrong"));
+	$success_message = json_encode(array("success" => "Everything went as expected"));
 
 	// Overwrite the title for our page
 	add_filter('the_title', arcarbon_admin_title, 100);
@@ -220,10 +223,16 @@ function run_arcarbon_map() {
 			$geojsonCheck = ( $checkGeojson == $geojson);
 
 			if ( !$geojsonCheck ) {
-				echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
+				$geojson_error = json_encode(array(
+					"error" => "Request did not update user's geojson data",
+					"code"  => $updateGeojson,
+					"return"=> $checkGeojson,
+					"update"=> $geojson
+				));
+				echo $geojson_error;
 			}
 			else {
-				echo "{'success': 'Data posted to WP!'}";
+				echo $success_message;
 			}
 		}
 		else {
