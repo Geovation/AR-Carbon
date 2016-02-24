@@ -5,6 +5,29 @@ nav {
     box-shadow: none;
 }
 
+.hidden-footer {
+    visibility: hidden;
+}
+
+.change-headers {
+    font-size: 12px;
+    color: #86BD44;
+}
+
+.dataTables_scrollFootInner table  tfoot tr th {
+    background-color: #F9F9F9 !important;
+}
+
+.dataTables_scroll th {
+    width: 130px !important;
+    min-width: 130px !important;
+}
+
+.dataTables_scrollBody td {
+    width: 130px !important;
+    min-width: 130px !important;
+}
+
 .field-name-col {
     padding: 20px;
     width: 100px;

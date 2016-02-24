@@ -107,6 +107,20 @@ jQuery(document).ready(function($) {
     $(document).on("click", ".admin-update", function() {  // Add confirmation modal
         $("#update-submit").openModal(modalOptions);
     });
+
+    $(".edit-field-titles").change(function(){
+
+        var th = $(this).closest("th")[0];
+        var index = $(".dataTables_scrollFootInner table tfoot tr th").index(th);
+        var hidden = $(this).siblings("div");
+        var header = $(".dataTables_scrollHeadInner table thead tr th")[index];
+        $(header).text(this.value);
+        hidden.text(this.value);
+        table.columns.adjust().draw();
+
+    });
+
+
     // Update confirm handler is in admin-update.js
 
      function getUserData(id) {
@@ -198,7 +212,7 @@ jQuery(document).ready(function($) {
         }
 
         table = $('#admin').DataTable({
-             //"scrollX" : true,
+             "scrollX" : true,
              "columnDefs": [
                 {
                     "orderDataType": "dom-input",
@@ -259,6 +273,7 @@ jQuery(document).ready(function($) {
     }
 
     // Convenience functions
+
 
     function setFarmerId(id) {
         // Set the farmers ID in the #admin data

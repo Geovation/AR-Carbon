@@ -36,52 +36,66 @@ include 'map-options.php';
 
 function run_arcarbon_map() {
 
-
 	// Load in all the necessary JavaScript
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts');
 	function enqueue_scripts() {
+
 		if (is_page( 'Populate Map' )) { // Make sure we are on the right page
 
 			// If the user is an administrator
 			if (current_user_can( 'administrator' )) {
-				wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
-				wp_enqueue_script( 'tables', plugins_url( '/assets/js/jquery.dataTables.min.js', __FILE__ ), array('jquery') );
-				wp_enqueue_script( 'typeahead', plugins_url( '/assets/js/jquery-ui.min.js', __FILE__ ), array('jquery') );
 
-				wp_enqueue_script( 'arcarbon_admin_typeahead',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
-				wp_localize_script( 'arcarbon_admin_typeahead', 'update', array(
-					'ajax_url' => admin_url( 'admin-ajax.php' )
-				));
+				enqueue('materialize', 'materialize.min.0.97.5.js');
+				enqueue('tables', 'jquery.dataTables.min.js');
+				enqueue('typeahead', 'jquery-ui.min.js');
 
-				wp_enqueue_script( 'arcarbon_admin_retrieve',  plugins_url( '/assets/js/admin-search.js', __FILE__ ), array('jquery') );
-				wp_localize_script( 'arcarbon_admin_retrieve', 'update', array(
-					'ajax_url' => admin_url( 'admin-ajax.php' )
-				));
+				enqueue('arcarbon_admin_typeahead', 'admin-search.js');
+				localize( 'arcarbon_admin_typeahead');
 
-				wp_enqueue_script( 'arcarbon_admin_update',  plugins_url( '/assets/js/admin-update.js', __FILE__ ), array('jquery') );
-				wp_localize_script( 'arcarbon_admin_update', 'update', array(
-					'ajax_url' => admin_url( 'admin-ajax.php' )
-				));
+				enqueue('arcarbon_admin_retrieve', 'admin-search.js');
+				localize( 'arcarbon_admin_retrieve');
+
+				enqueue('arcarbon_admin_update', 'admin-update.js');
+				localize( 'arcarbon_admin_update');
+
+				enqueue('arcarbon_admin_update_headers', 'admin-update-headers.js');
+				localize( 'arcarbon_admin_update_headers');
+
 			}
 			// If they are a user
 			else {
-				wp_enqueue_script( 'leaflet', plugins_url( '/assets/js/leaflet.js', __FILE__ ) );
-				wp_enqueue_script( 'esri-leaflet', plugins_url( '/assets/js/esri-leaflet.js', __FILE__ ) );
-				wp_enqueue_script( 'leaflet-draw', plugins_url( '/assets/js/leaflet.draw.js', __FILE__ ));
-				wp_enqueue_script( 'leaflet-locate', plugins_url( '/assets/js/L.Control.Locate.min.js', __FILE__ ));
-				wp_enqueue_script( 'esri-leaflet-geocoder', plugins_url( '/assets/js/esri-leaflet-geocoder.js', __FILE__ ));
-				wp_enqueue_script( 'turf', plugins_url( '/assets/js/turf.min.js', __FILE__));
-				wp_enqueue_script( 'materialize', plugins_url( '/assets/js/materialize.min.0.97.5.js', __FILE__ ), array('jquery') );
-				wp_enqueue_script( 'arcarbon', plugins_url( '/assets/js/arcarbon.js', __FILE__ ), array( 'jquery' ));
-				wp_enqueue_script( 'arcarbon_map_update', plugins_url( '/assets/js/arcarbon-map-update.js', __FILE__ ), array( 'jquery' ));
+				enqueue( 'leaflet','leaflet.js');
+				enqueue( 'esri-leaflet','esri-leaflet.js');
+				enqueue( 'leaflet-draw','leaflet.draw.js');
+				enqueue( 'leaflet-locate', 'L.Control.Locate.min.js');
+				enqueue( 'esri-leaflet-geocoder',  'esri-leaflet-geocoder.js');
+				enqueue( 'turf', 'turf.min.js');
+				enqueue( 'materialize', 'materialize.min.0.97.5.js');
+				enqueue( 'arcarbon', 'arcarbon.js');
+
+				enqueue( 'arcarbon_map_update', 'arcarbon-map-update.js');
 				wp_localize_script( 'arcarbon_map_update', 'update', array(
 					'ajax_url' => admin_url( 'admin-ajax.php' ),
 					'user_id'  => get_current_user_id()
 				));
 			}
 		}
+
+
 	}
 
+	function localize($service) {
+		// Localize a AJAX Script
+		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
+		wp_localize_script( $service, 'update', $admin_ajax_url);
+	}
+
+	function enqueue($script, $file) {
+		// Enqueue an AJAX script
+		wp_enqueue_script( $script, plugins_url( "/assets/js/" . $file, __FILE__ ), array('jquery') );
+	}
+
+	$error_message = json_encode(array("error" => "Something went wrong"));
 
 	// Overwrite the title for our page
 	add_filter('the_title', arcarbon_admin_title, 100);
@@ -145,12 +159,12 @@ function run_arcarbon_map() {
 
 		}
 		else {
-			echo "{'error', 'Something went wrong'}";
+			echo $error_message;
 		}
 		die();
 	}
 
-	add_action( 'wp_ajax_nopriv_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
+	//add_action( 'wp_ajax_nopriv_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
 	add_action( 'wp_ajax_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
 	function arcarbon_admin_typeahead() {
 
@@ -165,12 +179,32 @@ function run_arcarbon_map() {
 			echo json_encode($farmers);
 		}
 		else {
-			echo "{'error', 'Something went wrong'}";
+			echo $error_message;
 		}
 		die();
 	}
 
-	add_action( 'wp_ajax_nopriv_arcarbon_map_update', 'arcarbon_map_update' );
+	//add_action( 'wp_ajax_nopriv_arcarbon_admin_update_headers', 'arcarbon_admin_update_headers' );
+	add_action( 'wp_ajax_arcarbon_admin_update_headers', 'arcarbon_admin_update_headers' );
+	function arcarbon_admin_update_headers() {
+
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
+
+			$changed_key = $_POST['changed_key'];     // i.e. arcarbon_field_name
+			$changed_value = $_POST['changed_value']; // Field Name -> Farmers Field Name
+			$headers = json_decode(get_option("arcarbon_headers"), true); // Get the headers object
+			$headers[$changed_key] = $changed_value;
+			$changedHeaders = json_encode($headers);
+			update_option( 'arcarbon_headers', $changedHeaders );
+		}
+		else {
+			echo $error_message;
+		}
+		die();
+	}
+
+
+	//add_action( 'wp_ajax_nopriv_arcarbon_map_update', 'arcarbon_map_update' );
 	add_action( 'wp_ajax_arcarbon_map_update', 'arcarbon_map_update' );
 	function arcarbon_map_update() {
 
@@ -193,12 +227,12 @@ function run_arcarbon_map() {
 			}
 		}
 		else {
-			echo "{'error', 'Something went wrong'}";
+			echo $error_message;
 		}
 		die();
 	}
 
-	add_action( 'wp_ajax_nopriv_admin_update', 'arcarbon_admin_update' );
+	//add_action( 'wp_ajax_nopriv_admin_update', 'arcarbon_admin_update' );
 	add_action( 'wp_ajax_admin_update', 'arcarbon_admin_update' );
 	function arcarbon_admin_update() {
 
@@ -225,7 +259,7 @@ function run_arcarbon_map() {
 
 		}
 		else {
-			echo "{'error', 'Something went wrong'}";
+			echo $error_message;
 		}
 		die();
 	}
@@ -238,7 +272,15 @@ function run_arcarbon_map() {
 		$geojsonCheck = ( $checkGeojson == $geojson);
 
 		if ( !$geojsonCheck ) {
-			echo "{'error' : 'Request did not update user's geojson data', 'code': '$updateGeojson', 'return': '$checkGeojson', 'update' : '$geojson'}";
+
+			$geojson_error = json_encode(array(
+				"error" => "Request did not update user's geojson data",
+	            "code"  => $updateGeojson,
+			    "return"=> $checkGeojson,
+			    "update"=> $geojson
+		    ));
+
+			echo $geojson_error;
 		}
 		else {
 			echo getUserData($farmer_id, $geojson);
@@ -250,14 +292,14 @@ function run_arcarbon_map() {
 		$geojson = json_decode($geojson);
 		$user = get_user_by("ID", $farmer_id);
 		return json_encode(
-				array(
-					"headers" => $headers,
-					"geojson" => $geojson,
-					"id"	  => $farmer_id,
-					"email"   => $user->user_email,
-					"name"    => $user->first_name . " " . $user->last_name
-				)
-			 );
+			array(
+				"headers" => $headers,
+				"geojson" => $geojson,
+				"id"	  => $farmer_id,
+				"email"   => $user->user_email,
+				"name"    => $user->first_name . " " . $user->last_name
+			)
+		);
 	}
 
 	function handleGeojson($geojson) {

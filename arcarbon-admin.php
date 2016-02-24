@@ -25,10 +25,15 @@
 
     $headers_array = json_decode($headers, true); // Get as an array instead of object
     $header = '<tr>';
+    $footer = '<tr>';
     foreach ($headers_array as $key => $value) {
-        $header .= ('<th data-header="'.$key.'" >'.$value.'</th>');
+        if (!empty($key) && !empty($value)) {
+            $header .= ('<th data-header="'.$key.'" >'.$value.'</th>');
+            $footer .= ('<th><header class="change-headers">Change Header: </header><input class="edit-field-titles" value="'.$value.'"><div class="hidden-footer">'.$value.'</div></th>');
+        }
     }
     $header .= "</tr>";
+    $footer .= "</tr>";
 
     // Make the body element
 ?>
@@ -46,12 +51,12 @@
 
     <div id="admin-holder" data-farmerid="">
         <h5> Field Information </h5>
-        <table id="admin" class="display" cellspacing="0" width="100%">
+        <table id="admin" class="display nowrap" cellspacing="0" width="100%">
             <thead>
                <?php echo $header; ?>
             </thead>
             <tfoot>
-               <?php echo $header; ?>
+               <?php echo $footer; ?>
             </tfoot>
             <tbody>
                 <?php echo $body; ?>
