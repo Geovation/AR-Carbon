@@ -13,12 +13,12 @@ jQuery(document).ready(function($) {
 
     // Set modal options
     var modalOptions = {
-            dismissible: false,
-            opacity: 0.5,
-            in_duration: 350,
-            out_duration: 250,
-            ready: undefined,
-            complete: undefined,
+        dismissible: true,
+        opacity: 0.5,
+        in_duration: 350,
+        out_duration: 250,
+        ready: undefined,
+        complete: function() { $('.lean-overlay').remove(); } // Hack
      };
 
     // Initialise
@@ -26,6 +26,64 @@ jQuery(document).ready(function($) {
     var editableVars = "#admin tbody td input"; // Store the selector of our inputs that can change
     $('.search-farmers').submit(function(e){ e.preventDefault(); }); // Prevent the page from refreshing
     addInputDataSorting(); // Inputs need to be sorted too!
+
+    // Get hold of all the user (non meta) data so we can do an autocomplete against it
+    $.ajax({
+         url: update.ajax_url,
+         type : 'post',
+         data : {
+             action   : 'arcarbon_admin_typeahead',
+             username : $("#username-search").val()
+         }
+    })
+    .done(function(data) {
+
+        var userData = JSON.parse(data);  // Parse the data
+
+        $('#username-search').autocomplete({
+            minLength: 1, // This shows the min length of charcters that must be typed before the autocomplete looks for a match.
+            source: typeaheadSource,
+            focus: function(event, ui) {
+                $('#username-search').val(ui.item.label);
+                return false;
+            },
+            select: function(event, ui) {   // Once a value in the drop down list is selected, do the following:
+                var id = ui.item.value;
+                getUserData(id);
+                return false;
+            }
+        });
+
+        function typeaheadSource(request, response) {
+            // Turns object into array for autocomplete to use (autocomplete only accepts arrays)
+            var term = request.term;
+            var uniqueIds = [];
+            var matching = [];
+            $.each(userData, function(i, farmer){
+                $.each(farmer, function(key, val) {
+                    if (strContains(val, term) && uniqueIds.indexOf(farmer.ID) === -1) {
+                        matching.push({
+                            "label" : farmer.Name + " ( " + key + " : " + val + " )",
+                            "value" : farmer.ID
+                        });
+                        uniqueIds.push(farmer.ID);
+                    }
+                });
+            });
+            response(matching);
+        }
+
+        function strContains(val, term) {
+            // Check if a string is within another in a case insensitive way
+            return (val.toLowerCase().indexOf(term.toLowerCase()) !== -1);
+        }
+
+        $("#username-search").prop("disabled", false); // Enable input after the data has loaded :)
+
+     })
+     .fail(function() {
+         $('#admin-error').openModal(modalOptions);
+     });
 
     // Enable the update button on change to inputs
     $(document).on("change", editableVars, function(){
@@ -40,7 +98,6 @@ jQuery(document).ready(function($) {
     });
     // On confirm reload the table to it's previous state
     $( document ).on( 'click', '.admin-cancel-confirm', function() {
-        console.log("onClick lastloaded data", lastLoadedData);
         populateDataTables(lastLoadedData);
         $(".admin-cancel").prop("disabled", true);
         $(".admin-update").prop("disabled", true);
@@ -50,45 +107,53 @@ jQuery(document).ready(function($) {
     $(document).on("click", ".admin-update", function() {  // Add confirmation modal
         $("#update-submit").openModal(modalOptions);
     });
-    // Update confirm handler is in admin-update.js
 
-    // Handle the user searching for farmers
-    $("#username-search").keypress(function(e) {
-        var differentSearch = this.value != previousSearch; // Lets check to see if it's the same search
-        if(e.which == 13 && differentSearch) { // If user presses enter and not blank
+    $(".edit-field-titles").change(function(){
 
-        	$.ajax({
-        		url: update.ajax_url,
-                type : 'post',
-                data : {
-                    action   : 'arcarbon_admin_search',
-                    username : $("#username-search").val()
-                }
-            })
-            .done(function(data) {
-                try {
-                    data = JSON.parse(data);  // Parse the data
-                    console.log(data);
-                    if (!data.name || data.name == " ") {
-                        throw("No user was found under that username. Please check spelling.");
-                    }
-                    else {
-                        lastLoadedData = data;
-                        setFarmerId(data.id);
-            			populateDataTables(data);
-                    }
-                }
-                catch (e) {
-                    handleFailure(e);
-                }
-    		})
-            .fail(function() {
-              //button.prop('disabled',false); // Undo the button disabling
-          });
-          previousSearch = this.value;
-        }
+        var th = $(this).closest("th")[0];
+        var index = $(".dataTables_scrollFootInner table tfoot tr th").index(th);
+        var hidden = $(this).siblings("div");
+        var header = $(".dataTables_scrollHeadInner table thead tr th")[index];
+        $(header).text(this.value);
+        hidden.text(this.value);
+        table.columns.adjust().draw();
 
     });
+
+
+    // Update confirm handler is in admin-update.js
+
+     function getUserData(id) {
+         // Get the user data from their ID
+         $.ajax({
+             url: update.ajax_url,
+             type : 'post',
+             data : {
+                 action : 'arcarbon_admin_retrieve',
+                 id     : id
+             }
+         })
+         .done(function(data) {
+             try {
+                 data = JSON.parse(data);
+                 if (!data.name || data.name == " ") {
+                     throw("No user was found under that username. Please check spelling.");
+                 }
+                 else {
+                    lastLoadedData = data;
+                    setFarmerId(data.id);
+                    populateDataTables(data);
+                 }
+             }
+             catch (e) {
+                 handleFailure(e);
+             }
+
+         })
+         .fail(function() {
+           $('#admin-error').openModal(modalOptions);
+         });
+    }
 
     function populateDataTables(data) {
         // Populate the tables with the Farmers field data and contact details
@@ -107,7 +172,7 @@ jQuery(document).ready(function($) {
             for (var j =0; j < geojson.features.length; j++) {
                 if (geojson.features[j].geometry.type === "Polygon") { // Make sure it's a field polygon
                     rows = '<tr>';
-                    $("#admin thead th").each(handleFeatures);
+                    $("#admin thead th").each(handleFeatures); // Does this need to be in a function?
                     rows += '</tr>';
                     $("#admin tbody").append(rows);
                 }
@@ -147,7 +212,7 @@ jQuery(document).ready(function($) {
         }
 
         table = $('#admin').DataTable({
-             //"scrollX" : true,
+             "scrollX" : true,
              "columnDefs": [
                 {
                     "orderDataType": "dom-input",
@@ -208,6 +273,7 @@ jQuery(document).ready(function($) {
     }
 
     // Convenience functions
+
 
     function setFarmerId(id) {
         // Set the farmers ID in the #admin data
