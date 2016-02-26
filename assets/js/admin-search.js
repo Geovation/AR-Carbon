@@ -109,14 +109,37 @@ jQuery(document).ready(function($) {
     });
 
     $(".edit-field-titles").change(function(){
-
+    
         var th = $(this).closest("th")[0];
         var index = $(".dataTables_scrollFootInner table tfoot tr th").index(th);
         var hidden = $(this).siblings("div");
         var header = $(".dataTables_scrollHeadInner table thead tr th")[index];
+
         $(header).text(this.value);
         hidden.text(this.value);
         table.columns.adjust().draw();
+
+    });
+
+    $(document).on("keyup", ".add-column-input", function(){
+        //$(this).val(this.value);
+        //console.log(change)
+        if ($(this).val()) {
+            $(".add-column-holder").prop("disabled", false);
+            $(".add-column").css("background-color", "#0E6939 !important");
+        }
+        else {
+            $(".add-column-holder").prop("disabled", true);
+            $(".add-column").css("background-color", "#808080 !important");
+        }
+    });
+
+    $(document).on("focus", ".remove-column-input", function(){
+        //$(this).val(this.value);
+        console.log("focus");
+
+        $(".remove-column-holder").prop("disabled", false);
+        $(".remove-column").css("background-color", "#FF4C4C !important");
 
     });
 
@@ -146,6 +169,7 @@ jQuery(document).ready(function($) {
                  }
              }
              catch (e) {
+                 console.error(e);
                  handleFailure(e);
              }
 
@@ -155,9 +179,12 @@ jQuery(document).ready(function($) {
          });
     }
 
+
+
     function populateDataTables(data) {
         // Populate the tables with the Farmers field data and contact details
         hideError();
+        console.log(data.headers);
 
         var headers = data.headers;
         var geojson = data.geojson;
@@ -165,8 +192,24 @@ jQuery(document).ready(function($) {
         var name    = data.name;
         var rows;
 
+        if (headers) {
+            populateDeleteFields(headers);
+        }
+
+        if (table) {
+            console.log("Previously created");
+            table.destroy(); // If we had a previous table we must destroy it first
+            if (("#admin").length) {
+                $("#admin").remove();
+                $(".update-column-div").after($(generateTable(headers)));
+                setFarmerId(data.id);
+                //console.log($("#admin_wrapper"));
+            }
+        }
+
         // Loop through all fields and make a new row for each
         if (geojson.features) {
+            console.log($("#admin tbody"));
             $("#admin tbody").remove();
             $("#admin thead").after("<tbody></tbody>");
             for (var j =0; j < geojson.features.length; j++) {
@@ -207,9 +250,8 @@ jQuery(document).ready(function($) {
             $("#content-inner").append(contactDetails);
         }
 
-        if (table) {
-            table.destroy(); // If we had a previous table we must destroy it first
-        }
+        console.log("\n ", isWellFormedTable($('#admin')[0]));
+        console.log("Inner", $("#admin").html());
 
         table = $('#admin').DataTable({
              "scrollX" : true,
@@ -245,6 +287,45 @@ jQuery(document).ready(function($) {
         }
     }
 
+    function populateDeleteFields(cols) {
+        var select = $(".remove-column-input");
+        // Remove
+        select
+            .find('option')
+            .remove();
+
+        // Repopulate
+        $.each(cols, function(key, value) {
+             select
+                 .append($("<option></option>")
+                 .attr("value", key)
+                 .text(value));
+        });
+    }
+
+    function isWellFormedTable(table){
+        // Determines whethere the table is well formed and can be used with DataTables (jQuery)
+
+        var isWellFormed = false;
+        table = $(table);
+
+        if(table.is("table")) { // Is table
+            if ( table.has("thead").length && table.has("tfoot").length && table.has("tbody") ) { // Has head and foot
+                var numRows = table.find("tbody").find("tr").length;
+                var numCells = table.find("tbody").find("td").length;
+                var tableHead = table.find("thead").find("th");
+                var tableFoot = table.find("tfoot").find("th");
+                var cols =  numCells / numRows;
+                if (tableHead.length === tableFoot.length) { // Number of column headings equals number of footers
+                    if (cols === tableHead.length && cols === tableHead.length) { // Number of cols equals to headers and footers");
+                        isWellFormed = true;
+                    }
+                }
+            }
+        }
+        return isWellFormed;
+    }
+
     function handleFailure(error) {
         // Handle bad data or user not found
 
@@ -272,12 +353,108 @@ jQuery(document).ready(function($) {
         }
     }
 
+
+    $(".add-column-holder").on("click", function(){
+        var button = $(".add-column-input");
+        console.log("clicks");
+        var newColumn = $(".add-column-input").val();
+        console.log(newColumn, keyifyNewColumn(newColumn));
+        var data = {
+            new_col_value   : newColumn,
+            new_col_key     : keyifyNewColumn(newColumn),
+            header_action   : "add",
+            action          : 'arcarbon_admin_add_column'
+        };
+
+        $.ajax({
+            url    : update.ajax_url,
+            type   : 'post',
+            data   : data
+        })
+        .done(function(response) {
+            var id = getFarmerId();
+            getUserData(id);
+            button.val(""); // Set new column input to blank
+        })
+        .fail(function() {
+          $('#admin-error').openModal(modalOptions);
+          //button.prop('disabled',false); // Undo the button disabling
+      });
+
+      function keyifyNewColumn(header) {
+          var key = "arcarbon_" + header.toLowerCase();
+          var re = new RegExp(" ", "g");
+          key = key.replace(/[^\w\s]/gi, '').trim().replace(re, '_');
+          return key;
+      }
+
+    });
+
+    $(".remove-column-holder").on("click", function(){
+        console.log("clicks");
+        var oldColumn = $(".remove-column-input").val();
+
+        var data = {
+            old_col_key   : oldColumn,
+            header_action : "remove",
+            action        : 'arcarbon_admin_add_column'
+        };
+
+        $.ajax({
+            url    : update.ajax_url,
+            type   : 'post',
+            data   : data
+        })
+        .done(function(response) {
+            var id = getFarmerId();
+            getUserData(id);
+        })
+        .fail(function() {
+          $('#admin-error').openModal(modalOptions);
+      });
+
+    });
+
+
     // Convenience functions
 
+    function generateTable(headers) {
+        //console.log(headers);
+        var newHeader = '<tr>';
+        var newFooter = '<tr>';
+
+        for (var key in headers) {
+
+            var value = headers[key];
+
+            newHeader += '<th data-header="'+key+'" >'+value+'</th>';
+            newFooter += '<th><header class="change-headers">Change Header: </header><input class="edit-field-titles" value="'+value+'"><div class="hidden-footer">'+value+'</div></th>';
+        }
+        newHeader += '</tr>';
+        newFooter += '</tr>';
+
+        var newTable = '<table id="admin" class="display nowrap" cellspacing="0" width="100%">'+
+            '<thead>'+
+                newHeader+
+            '</thead>'+
+            '<tfoot>'+
+                newFooter+
+            '</tfoot>'+
+            '<tbody>'+
+            '</tbody>'+
+        '</table>';
+        //console.log("newtable", newTable);
+        return newTable;
+    }
 
     function setFarmerId(id) {
         // Set the farmers ID in the #admin data
         $("#admin").data("farmerid", id);
+    }
+
+    function getFarmerId() {
+        // Set the farmers ID in the #admin data
+        return $("#admin").data("farmerid");
     }
 
     function getObjectKey( obj, value ) {

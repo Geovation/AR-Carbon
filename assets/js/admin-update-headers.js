@@ -27,7 +27,6 @@ jQuery(document).ready(function($) {
         })
         .done(function(response) {
             console.log(response);
-            //console.log("that worked ok");
 
         })
         .fail(function() {
