@@ -109,7 +109,7 @@ jQuery(document).ready(function($) {
     });
 
     $(".edit-field-titles").change(function(){
-    
+
         var th = $(this).closest("th")[0];
         var index = $(".dataTables_scrollFootInner table tfoot tr th").index(th);
         var hidden = $(this).siblings("div");
@@ -122,8 +122,6 @@ jQuery(document).ready(function($) {
     });
 
     $(document).on("keyup", ".add-column-input", function(){
-        //$(this).val(this.value);
-        //console.log(change)
         if ($(this).val()) {
             $(".add-column-holder").prop("disabled", false);
             $(".add-column").css("background-color", "#0E6939 !important");
@@ -135,7 +133,6 @@ jQuery(document).ready(function($) {
     });
 
     $(document).on("focus", ".remove-column-input", function(){
-        //$(this).val(this.value);
         console.log("focus");
 
         $(".remove-column-holder").prop("disabled", false);
@@ -197,13 +194,11 @@ jQuery(document).ready(function($) {
         }
 
         if (table) {
-            console.log("Previously created");
             table.destroy(); // If we had a previous table we must destroy it first
             if (("#admin").length) {
                 $("#admin").remove();
-                $(".update-column-div").after($(generateTable(headers)));
-                setFarmerId(data.id);
-                //console.log($("#admin_wrapper"));
+                $(".update-column-div").after($(generateTable(headers))); // Create the new table
+                setFarmerId(data.id); // Make sure the farmers ID is set on the table
             }
         }
 
@@ -443,7 +438,6 @@ jQuery(document).ready(function($) {
             '<tbody>'+
             '</tbody>'+
         '</table>';
-        //console.log("newtable", newTable);
         return newTable;
     }
 
