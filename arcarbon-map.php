@@ -31,7 +31,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 
 // Include our options file for setting up plugin settings like API keys
-include 'map-options.php';
+//include 'map-options.php'; // We don't use an API Key any more with Esri
 
 
 function run_arcarbon_map() {

@@ -189,7 +189,7 @@ jQuery(document).ready(function($) {
 
     map.on('draw:edited', function (event) {
         // For all edited layers
-        console.log(event);
+
         event.layers.eachLayer(function (layer) {
 
             if (isPolygon(layer)) {
@@ -228,7 +228,7 @@ jQuery(document).ready(function($) {
 
     map.on('draw:deleted', function (event) {
         // For all deleted layers
-        console.log("Delete", event);
+
         event.layers.eachLayer(function (layer) {
             if (isPolygon(layer)) {
                 $(layer._arcDomElement).remove();
@@ -483,7 +483,7 @@ jQuery(document).ready(function($) {
 
     function populateFieldTextModal(layer) {
         // Populate the modal for the layer
-        console.log("CLICKING");
+        
         if (!deleting) {
 
             var title = layer._arcFieldTitle || "";
