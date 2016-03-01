@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.19
+ * Version:           1.0.20
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -31,7 +31,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 
 // Include our options file for setting up plugin settings like API keys
-include 'map-options.php';
+//include 'map-options.php'; // We don't use an API Key any more with Esri
 
 
 function run_arcarbon_map() {
@@ -39,9 +39,8 @@ function run_arcarbon_map() {
 
 	// SCRIPT ENQUEUING AND LOCALIZATION
 
-	function localize($service) {
+	function localize($service, $admin_ajax_url) {
 		// Localize a AJAX Script
-		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
 		wp_localize_script( $service, 'update', $admin_ajax_url);
 	}
 
@@ -54,26 +53,27 @@ function run_arcarbon_map() {
 	add_action( 'wp_enqueue_scripts', 'enqueue_scripts');
 	function enqueue_scripts() {
 
+		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
 		if (is_page( 'Populate Map' )) { // Make sure we are on the right page
 
 			// If the user is an administrator
 			if (current_user_can( 'administrator' )) {
 
+				// Vendor JavaScript
 				enqueue('materialize', 'materialize.min.0.97.5.js');
 				enqueue('tables', 'jquery.dataTables.min.js');
 				enqueue('typeahead', 'jquery-ui.min.js');
 
-				enqueue('arcarbon_admin_typeahead', 'admin-search.js');
-				localize( 'arcarbon_admin_typeahead');
+				// Searching and table functionality
+				enqueue('arcarbon_admin_search', 'admin-search.js');
+				localize( 'arcarbon_admin_typeahead', $admin_ajax_url);
+				localize( 'arcarbon_admin_retrieve', $admin_ajax_url);
+				localize( 'arcarbon_admin_add_column', $admin_ajax_url);
+				localize( 'arcarbon_admin_update_headers', $admin_ajax_url);
 
-				enqueue('arcarbon_admin_retrieve', 'admin-search.js');
-				localize( 'arcarbon_admin_retrieve');
-
+				// Update variables in the table
 				enqueue('arcarbon_admin_update', 'admin-update.js');
-				localize( 'arcarbon_admin_update');
-
-				enqueue('arcarbon_admin_update_headers', 'admin-update-headers.js');
-				localize( 'arcarbon_admin_update_headers');
+				localize( 'arcarbon_admin_update', $admin_ajax_url);
 
 			}
 			// If they are a user
@@ -88,10 +88,11 @@ function run_arcarbon_map() {
 				enqueue( 'arcarbon', 'arcarbon.js');
 
 				enqueue( 'arcarbon_map_update', 'arcarbon-map-update.js');
-				wp_localize_script( 'arcarbon_map_update', 'update', array(
+				localize( 'arcarbon_map_update', array(
 					'ajax_url' => admin_url( 'admin-ajax.php' ),
 					'user_id'  => get_current_user_id()
 				));
+
 			}
 		}
 	}
@@ -166,6 +167,47 @@ function run_arcarbon_map() {
 		}
 		die();
 	}
+
+	add_action( 'wp_ajax_arcarbon_admin_add_column', 'arcarbon_admin_add_column' );
+	function arcarbon_admin_add_column() {
+
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
+
+			if ($_POST['header_action'] == "add") {
+				// Add a header
+
+				$new_col_key = $_POST['new_col_key'];
+				$new_col_value = $_POST['new_col_value'];
+
+				$headers = json_decode(get_option("arcarbon_headers"), true);
+				$headers[$new_col_key] = $new_col_value;
+
+				$new_headers = json_encode($headers);
+				update_option("arcarbon_headers", $new_headers);
+
+				echo $success_message;
+			}
+			else if ($_POST['header_action'] == "remove") {
+				// Delete a header
+
+				$old_col_key = $_POST['old_col_key'];
+				$headers = json_decode(get_option("arcarbon_headers"), true);
+				unset($headers[$old_col_key]);
+				$new_headers = json_encode($headers);
+				update_option("arcarbon_headers", $new_headers);
+			}
+
+
+
+		}
+		else {
+			echo $error_message;
+		}
+		die();
+	}
+
+
+
 
 	//add_action( 'wp_ajax_nopriv_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
 	add_action( 'wp_ajax_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );

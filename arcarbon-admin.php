@@ -50,7 +50,27 @@
    </form>
 
     <div id="admin-holder" data-farmerid="">
-        <h5> Field Information </h5>
+        <div class="row">
+            <h5 style="display: inline;"> Field Information </h5>
+        </div>
+        <div class="update-column-div">
+            <div class="add-column-div row">
+                <div class="add-column-text">Add a new column: </div>
+                <input class="add-column-input" >
+                <button class="btn-floating btn-large waves-effect waves-light add-column-holder" disabled>
+                    <i class="material-icons add-column">add</i>
+                </button>
+            </div>
+            <div class="remove-column-div row">
+                <div class="remove-column-text"> Remove an existing column: </div>
+                <select class="remove-column-input"></select>
+
+                <button class="btn-floating btn-large waves-effect waves-light remove-column-holder" disabled>
+                    <i class="remove-column">-</i>
+                </button>
+
+            </div>
+        </div>
         <table id="admin" class="display nowrap" cellspacing="0" width="100%">
             <thead>
                <?php echo $header; ?>

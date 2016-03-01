@@ -92,7 +92,6 @@ jQuery(document).ready(function($) {
     // If user has previous polygons saved and we're not in developement, or the user is not logged in
     //console.log(USER_LOGGED_IN)
     if ((USER_GEOJSON && !DEVELOPMENT) || !USER_LOGGED_IN) {
-        console.log(USER_LOGGED_IN);
         enableDraw = false;
         enableEdit = false;
     }
@@ -189,7 +188,7 @@ jQuery(document).ready(function($) {
 
     map.on('draw:edited', function (event) {
         // For all edited layers
-        console.log(event);
+
         event.layers.eachLayer(function (layer) {
 
             if (isPolygon(layer)) {
@@ -228,22 +227,24 @@ jQuery(document).ready(function($) {
 
     map.on('draw:deleted', function (event) {
         // For all deleted layers
-        console.log("Delete", event);
-        event.layers.eachLayer(function (layer) {
-            if (isPolygon(layer)) {
-                $(layer._arcDomElement).remove();
-                removeLabel(layer);
-            }
-            else if (isPoint(layer)) {
-                userFarm = undefined;
-                $(".leaflet-draw-draw-marker").show();
-            }
-        });
-        updateTotalArea();
-        checkTotalHectares(totalHectares, true);
-        updatePostData();
-        checkCanSubmit();
-        deleting = false;
+
+        if (event.layers) {
+            event.layers.eachLayer(function (layer) {
+                if (isPolygon(layer)) {
+                    $(layer._arcDomElement).remove();
+                    removeLabel(layer);
+                }
+                else if (isPoint(layer)) {
+                    userFarm = undefined;
+                    $(".leaflet-draw-draw-marker").show();
+                }
+            });
+            updateTotalArea();
+            checkTotalHectares(totalHectares, true);
+            updatePostData();
+            checkCanSubmit();
+            deleting = false;
+        }
 
     });
 
@@ -252,7 +253,9 @@ jQuery(document).ready(function($) {
     });
     map.on('draw:deletestop', function(e){
         drawnItems.eachLayer(function(layer){
-            getLabel(layer).show();
+            if (layer && layer.label) {
+                getLabel(layer).show();
+            }
         });
         deleting = false;
     });
@@ -483,7 +486,7 @@ jQuery(document).ready(function($) {
 
     function populateFieldTextModal(layer) {
         // Populate the modal for the layer
-        console.log("CLICKING");
+
         if (!deleting) {
 
             var title = layer._arcFieldTitle || "";
@@ -671,7 +674,13 @@ jQuery(document).ready(function($) {
 
           container.onclick = function(){
               if (!userFarmUndefined()) {
-                  map.setView(userFarm.getLatLng(), 12);
+                  map.setView(userFarm.getLatLng(), 13);
+              }
+              else {
+                  map.eachLayer(function(layer) {
+                      map.fitBounds(layer.getBounds());
+                      return;
+                  });
               }
           };
        return container;
