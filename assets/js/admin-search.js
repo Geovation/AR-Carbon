@@ -412,7 +412,15 @@ jQuery(document).ready(function($) {
     }
 
 
-    $(".add-column-holder").on("click", function(){
+    $(".add-column-holder").on("click", function() {
+        // Call the confirm delete modal for deleting columns
+
+        $("#confirm-add").openModal(modalOptions);
+
+    });
+
+
+    $(".add-column-confirm").on("click", function() {
         // Click handler for when a new column button is clicked and column is added to the table
 
         var button = $(".add-column-input");
@@ -435,10 +443,12 @@ jQuery(document).ready(function($) {
             var id = getFarmerId();
             getUserData(id);
             button.val(""); // Set new column input to blank
+            $(".add-column-holder").prop("disabled", true);
+            $(".add-column").css("background-color", "#808080 !important");
+
         })
         .fail(function() {
           $('#admin-error').openModal(modalOptions);
-          //button.prop('disabled',false); // Undo the button disabling
       });
 
       function keyifyNewColumn(header) {
@@ -476,6 +486,8 @@ jQuery(document).ready(function($) {
         .done(function(response) {
             var id = getFarmerId();
             getUserData(id);
+            $(".remove-column-holder").prop("disabled", true);
+            $(".remove-column").css("background-color", "#808080 !important");
         })
         .fail(function() {
           $('#admin-error').openModal(modalOptions);
