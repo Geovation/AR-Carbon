@@ -42,10 +42,14 @@
     // Create return HTML
     $header = '<tr>';
     $footer = '<tr>';
+
+
     foreach ($headers_array as $key => $value) {
         if (!empty($key) && !empty($value)) {
             $header .= ('<th data-header="'.$key.'" >'.$value.'</th>');
-            $footer .= ('<th><header class="change-headers">Change Header: </header><input class="edit-field-titles" value="'.$value.'"><div class="hidden-footer">'.$value.'</div></th>');
+            $footer .= ('<th><header class="change-headers">Change Header: </header>
+                        <input class="edit-field-titles" value="'.$value.'">
+                        <div class="hidden-footer">'.$value.'</div></th>');
         }
     }
     $header .= "</tr>";
@@ -142,7 +146,7 @@
 </div>
 </div>
 
-<!-- Submit button confirm Modal Structure -->
+<!-- Confirm column delete Modal Structure -->
 <div id="confirm-delete" class="modal">
 <div class="modal-content">
   <h4>Are you sure you want to delete this column?</h4>
@@ -153,5 +157,18 @@
     <a href="#!" class=" delete-column-confirm modal-action modal-close waves-effect waves-green btn-flat">Delete it!</a>
 </div>
 </div>
+
+<!-- Confirm column add Modal Structure -->
+<div id="confirm-add" class="modal">
+<div class="modal-content">
+  <h4>Are you sure you want to add a column?</h4>
+  <p>Adding this column will add it for all users, are you sure this is something you want to do?</p>
+</div>
+<div class="modal-footer">
+    <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I don't want to do that</a>
+    <a href="#!" class=" add-column-confirm modal-action modal-close waves-effect waves-green btn-flat">Add it!</a>
+</div>
+</div>
+
 
 <?php
