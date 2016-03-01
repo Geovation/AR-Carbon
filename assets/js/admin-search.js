@@ -108,12 +108,12 @@ jQuery(document).ready(function($) {
         $("#update-submit").openModal(modalOptions);
     });
 
-    // When header changes
+    // When the Admin changes headers
     (function () {
         var previous;
 
         $(".edit-field-titles").on('focus', function() {
-            previousVal = this.value;
+            previousVal = this.value; // Save the previous value so we can revert to it
         }).change(function(){
 
             var footerSelector = ".dataTables_scrollFootInner table tfoot tr th";
@@ -168,6 +168,7 @@ jQuery(document).ready(function($) {
     })(); // Create closure to prevent pollution with previous
 
     $(document).on("keyup", ".add-column-input", function(){
+        // When user interacts withe the add column input, make the button available
         if ($(this).val()) {
             $(".add-column-holder").prop("disabled", false);
             $(".add-column").css("background-color", "#0E6939 !important");
@@ -179,7 +180,7 @@ jQuery(document).ready(function($) {
     });
 
     $(document).on("focus", ".remove-column-input", function(){
-
+        // When user interacts withe the remove column select, make the button available
         $(".remove-column-holder").prop("disabled", false);
         $(".remove-column").css("background-color", "#FF4C4C !important");
 
@@ -394,6 +395,8 @@ jQuery(document).ready(function($) {
 
 
     $(".add-column-holder").on("click", function(){
+        // Click handler for when a new column button is clicked and column is added to the table
+
         var button = $(".add-column-input");
 
         var newColumn = $(".add-column-input").val();
@@ -430,6 +433,8 @@ jQuery(document).ready(function($) {
     });
 
     $(".remove-column-holder").on("click", function(){
+        // Click handler for when remove column button is clicked and column is removed from the table
+
         console.log("clicks");
         var oldColumn = $(".remove-column-input").val();
 
@@ -458,6 +463,8 @@ jQuery(document).ready(function($) {
     // Convenience functions
 
     function generateTable(headers) {
+        // Generate the table programmatically
+
         //console.log(headers);
         var newHeader = '<tr>';
         var newFooter = '<tr>';
@@ -523,6 +530,8 @@ jQuery(document).ready(function($) {
     }
 
     function addInputDataSorting() {
+        // Allow the table to be sorted even if we use inputs rather than plain text
+
         $.fn.dataTable.ext.order['dom-input'] = function (settings, col) {
             return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
                 var val = $('input', td).val() || $(td).text();
