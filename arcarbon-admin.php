@@ -6,24 +6,40 @@
 <?php
     // If the carbon headers does not exist make them
     $headers = get_option( "arcarbon_headers");
+    $default_headers = array(
+        "arcarbon_field_name"       => "Field Name",
+        "arcarbon_farm_name"        => "Farm Name",
+        "arcarbon_designation"      => "Field designation",
+        "arcarbon_area"             => "Field Size (ha)",
+        "arcarbon_som"              => "Field SOM (%)",
+        "arcarbon_bulk_density"     => "Bulk Density (g/l)",
+        "arcarbon_percent_carbon"   => "Carbon (%)",
+        "arcarbon_carbon_by_weight" => "Carbon by Weight (t/m³)",
+        "arcarbon_total_carbon"     => "Total carbon for field (tonnes)",
+        "arcarbon_accumulation"     => "Accumulation since last test (kg/ha)"
+    );
+    $mandatory_headers = array(
+        "arcarbon_field_name" => "Field Name",
+        "arcarbon_area"       => "Field Size (ha)"
+    );
 
+    // Handle the case that headers don't exist - use our default headers
     if (!$headers) {
-        $headers = '{
-            "arcarbon_field_name" : "Field Name",
-            "arcarbon_farm_name" : "Farm Name",
-            "arcarbon_designation" : "Field designation",
-            "arcarbon_area" : "Field Size (ha)",
-            "arcarbon_som" : "Field SOM (%)",
-            "arcarbon_bulk_density" : "Bulk Density (g/l)",
-            "arcarbon_percent_carbon" : "Carbon (%)",
-            "arcarbon_carbon_by_weight" : "Carbon by Weight (t/m³)",
-            "arcarbon_total_carbon" : "Total carbon for field (tonnes)",
-            "arcarbon_accumulation" : "Accumulation since last test (kg/ha)"
-        }';
+        $headers = $default_headers;
         update_option( "arcarbon_headers", $headers);
     }
+    else {
+        $headers_array = json_decode($headers,true); // True gives a assoc array
+    }
 
-    $headers_array = json_decode($headers, true); // Get as an array instead of object
+    // Add mandatory if for some reason they don't exist
+    foreach ($mandatory_headers as $key => $value) {
+        if (array_key_exists($key, $headers_array)) {
+            $headers_array[$key] = $value;
+        }
+    }
+
+    // Create return HTML
     $header = '<tr>';
     $footer = '<tr>';
     foreach ($headers_array as $key => $value) {
@@ -35,7 +51,6 @@
     $header .= "</tr>";
     $footer .= "</tr>";
 
-    // Make the body element
 ?>
 
 <div class="row ar-map-full">
@@ -124,6 +139,18 @@
 </div>
 <div class="modal-footer">
   <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Okay</a>
+</div>
+</div>
+
+<!-- Submit button confirm Modal Structure -->
+<div id="confirm-delete" class="modal">
+<div class="modal-content">
+  <h4>Are you sure you want to delete this column?</h4>
+  <p>Deleting this column will remove all data for all users, are you sure this is something you want to do?</p>
+</div>
+<div class="modal-footer">
+    <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I don't want to do that</a>
+    <a href="#!" class=" delete-column-confirm modal-action modal-close waves-effect waves-green btn-flat">Delete it!</a>
 </div>
 </div>
 

@@ -128,7 +128,7 @@ jQuery(document).ready(function($) {
             var changedKey = $(header).data("header");
             var matching = false;
 
-            $(".dataTables_scrollHeadInner table thead tr th").each(function(i, element) {
+            $(headerSelector).each(function(i, element) {
                 if ($(element).text().trim().toLowerCase() === changedVal.trim().toLowerCase()) {
                     matching = true;
                 }
@@ -142,6 +142,9 @@ jQuery(document).ready(function($) {
                 $(header).text(this.value); // Update the header
                 hidden.text(this.value); // Match the text in the hidden div (to keep size proportions)
                 table.columns.adjust().draw(); // Redraw the table because widths have changed
+
+                var headers = getFieldHeaders();
+                populateDeleteFields(headers);
 
                 // Send off all our data
                 var data = {
@@ -212,7 +215,7 @@ jQuery(document).ready(function($) {
                  }
              }
              catch (e) {
-                 console.error(e);
+                 //console.error(e);
                  handleFailure(e);
              }
 
@@ -235,6 +238,7 @@ jQuery(document).ready(function($) {
         var rows;
 
         if (headers) {
+            // Populate the delete select with all of the available headers
             populateDeleteFields(headers);
         }
 
@@ -249,7 +253,6 @@ jQuery(document).ready(function($) {
 
         // Loop through all fields and make a new row for each
         if (geojson.features) {
-            console.log($("#admin tbody"));
             $("#admin tbody").remove();
             $("#admin thead").after("<tbody></tbody>");
             for (var j =0; j < geojson.features.length; j++) {
@@ -327,20 +330,35 @@ jQuery(document).ready(function($) {
         }
     }
 
-    function populateDeleteFields(cols) {
+    function populateDeleteFields(headers) {
+        // Populates the delete fields select input
+
         var select = $(".remove-column-input");
-        // Remove
-        select
-            .find('option')
-            .remove();
+        select.find('option').remove(); // Remove all options
+
+        var blacklist = ["arcarbon_field_name", "arcarbon_field_area"];
 
         // Repopulate
-        $.each(cols, function(key, value) {
-             select
-                 .append($("<option></option>")
-                 .attr("value", key)
-                 .text(value));
+        $.each(headers, function(key, value) {
+            if (blacklist.indexOf(key) === -1) {
+                //console.log(key);
+                select
+                    .append($("<option></option>")
+                    .attr("value", key)
+                    .text(value));
+            }
         });
+    }
+
+    function getFieldHeaders() {
+        // Retrieves all the current headers for the table
+        var headers = {};
+        $(".dataTables_scrollHeadInner table thead tr th").each(function(i, element) {
+            var key = $(element).data("header");
+            var value = $(element).text();
+            headers[key] = value; // Assign the key value pair
+        });
+        return headers;
     }
 
     function isWellFormedTable(table){
@@ -433,9 +451,15 @@ jQuery(document).ready(function($) {
     });
 
     $(".remove-column-holder").on("click", function(){
+        // Call the confirm delete modal for deleting columns
+
+        $("#confirm-delete").openModal(modalOptions);
+
+    });
+
+    $(".delete-column-confirm").on("click", function(){
         // Click handler for when remove column button is clicked and column is removed from the table
 
-        console.log("clicks");
         var oldColumn = $(".remove-column-input").val();
 
         var data = {
@@ -456,7 +480,6 @@ jQuery(document).ready(function($) {
         .fail(function() {
           $('#admin-error').openModal(modalOptions);
       });
-
     });
 
 
