@@ -59,17 +59,19 @@ function run_arcarbon_map() {
 			// If the user is an administrator
 			if (current_user_can( 'administrator' )) {
 
+				// Vendor JavaScript
 				enqueue('materialize', 'materialize.min.0.97.5.js');
 				enqueue('tables', 'jquery.dataTables.min.js');
 				enqueue('typeahead', 'jquery-ui.min.js');
 
+				// Searching and table functionality
 				enqueue('arcarbon_admin_search', 'admin-search.js');
 				localize( 'arcarbon_admin_typeahead', $admin_ajax_url);
 				localize( 'arcarbon_admin_retrieve', $admin_ajax_url);
 				localize( 'arcarbon_admin_add_column', $admin_ajax_url);
 				localize( 'arcarbon_admin_update_headers', $admin_ajax_url);
 
-
+				// Update variables in the table
 				enqueue('arcarbon_admin_update', 'admin-update.js');
 				localize( 'arcarbon_admin_update', $admin_ajax_url);
 

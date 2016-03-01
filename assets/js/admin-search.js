@@ -108,18 +108,64 @@ jQuery(document).ready(function($) {
         $("#update-submit").openModal(modalOptions);
     });
 
-    $(".edit-field-titles").change(function(){
+    // When header changes
+    (function () {
+        var previous;
 
-        var th = $(this).closest("th")[0];
-        var index = $(".dataTables_scrollFootInner table tfoot tr th").index(th);
-        var hidden = $(this).siblings("div");
-        var header = $(".dataTables_scrollHeadInner table thead tr th")[index];
+        $(".edit-field-titles").on('focus', function() {
+            previousVal = this.value;
+        }).change(function(){
 
-        $(header).text(this.value);
-        hidden.text(this.value);
-        table.columns.adjust().draw();
+            var footerSelector = ".dataTables_scrollFootInner table tfoot tr th";
+            var headerSelector = ".dataTables_scrollHeadInner table thead tr th";
 
-    });
+            var hidden = $(this).siblings("div"); // Find the hidden div
+            var th = $(this).closest("th")[0]; // Get the table header
+            var index = $(footerSelector).index(th); // Get it's index
+            var header = $(headerSelector)[index]; // Retrieve the header itself
+
+            var changedVal = this.value;
+            var changedKey = $(header).data("header");
+            var matching = false;
+
+            $(".dataTables_scrollHeadInner table thead tr th").each(function(i, element) {
+                if ($(element).text().trim().toLowerCase() === changedVal.trim().toLowerCase()) {
+                    matching = true;
+                }
+            });
+
+            if (matching === true) {
+                $(this).val(previousVal);
+                return;
+            }
+            else {
+                $(header).text(this.value); // Update the header
+                hidden.text(this.value); // Match the text in the hidden div (to keep size proportions)
+                table.columns.adjust().draw(); // Redraw the table because widths have changed
+
+                // Send off all our data
+                var data = {
+                    changed_key   : changedKey,
+                    changed_value : changedVal,
+                    action        : 'arcarbon_admin_update_headers'
+                };
+
+                $.ajax({
+                    url    : update.ajax_url,
+                    type   : 'post',
+                    data   : data
+                })
+                .done(function(response) {
+                    console.log(response);
+
+                })
+                .fail(function() {
+                  $('#admin-error').openModal(modalOptions);
+              });
+          }
+        });
+
+    })(); // Create closure to prevent pollution with previous
 
     $(document).on("keyup", ".add-column-input", function(){
         if ($(this).val()) {
@@ -133,7 +179,6 @@ jQuery(document).ready(function($) {
     });
 
     $(document).on("focus", ".remove-column-input", function(){
-        console.log("focus");
 
         $(".remove-column-holder").prop("disabled", false);
         $(".remove-column").css("background-color", "#FF4C4C !important");
@@ -181,7 +226,6 @@ jQuery(document).ready(function($) {
     function populateDataTables(data) {
         // Populate the tables with the Farmers field data and contact details
         hideError();
-        console.log(data.headers);
 
         var headers = data.headers;
         var geojson = data.geojson;
@@ -245,8 +289,8 @@ jQuery(document).ready(function($) {
             $("#content-inner").append(contactDetails);
         }
 
-        console.log("\n ", isWellFormedTable($('#admin')[0]));
-        console.log("Inner", $("#admin").html());
+        //console.log("\n ", isWellFormedTable($('#admin')[0]));
+        //console.log("Inner", $("#admin").html());
 
         table = $('#admin').DataTable({
              "scrollX" : true,
@@ -351,9 +395,9 @@ jQuery(document).ready(function($) {
 
     $(".add-column-holder").on("click", function(){
         var button = $(".add-column-input");
-        console.log("clicks");
+
         var newColumn = $(".add-column-input").val();
-        console.log(newColumn, keyifyNewColumn(newColumn));
+
         var data = {
             new_col_value   : newColumn,
             new_col_key     : keyifyNewColumn(newColumn),

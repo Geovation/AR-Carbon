@@ -34,7 +34,7 @@ jQuery(document).ready(function($) {
 
         // Check that the data is no undefined etc
         if (data && checkData(data)) {
-            console.debug("Valid: ", data);
+            //console.debug("Valid: ", data);
         	$.ajax({
         		url: url,
                 type : 'post',
