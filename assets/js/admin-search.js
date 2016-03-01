@@ -336,7 +336,7 @@ jQuery(document).ready(function($) {
         var select = $(".remove-column-input");
         select.find('option').remove(); // Remove all options
 
-        var blacklist = ["arcarbon_field_name", "arcarbon_field_area"];
+        var blacklist = ["arcarbon_field_name", "arcarbon_area"];
 
         // Repopulate
         $.each(headers, function(key, value) {
@@ -452,6 +452,8 @@ jQuery(document).ready(function($) {
       });
 
       function keyifyNewColumn(header) {
+          // Create a key that matches the styling of the others i.e. arcarbon_some_random_key
+
           var key = "arcarbon_" + header.toLowerCase();
           var re = new RegExp(" ", "g");
           key = key.replace(/[^\w\s]/gi, '').trim().replace(re, '_');

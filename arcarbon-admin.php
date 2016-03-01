@@ -24,17 +24,18 @@
     );
 
     // Handle the case that headers don't exist - use our default headers
-    if (!$headers) {
+    if (!$headers || $headers == "" || $headers == " ") {
         $headers = $default_headers;
-        update_option( "arcarbon_headers", $headers);
+        update_option( "arcarbon_headers", json_encode($headers)); // Convert to string
     }
-    else {
-        $headers_array = json_decode($headers,true); // True gives a assoc array
+    // Handle previously created data
+    else if (gettype($headers) == "string" ) {
+        $headers_array = json_decode($headers, true); // Convert to associative array
     }
 
     // Add mandatory if for some reason they don't exist
     foreach ($mandatory_headers as $key => $value) {
-        if (array_key_exists($key, $headers_array)) {
+        if (!array_key_exists($key, $headers_array)) {
             $headers_array[$key] = $value;
         }
     }
