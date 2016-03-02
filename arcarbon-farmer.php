@@ -44,7 +44,7 @@
         <div class="row ar-map-submit-holder">
             <button class="ar-map-submit ar-map-dark-green btn waves-effect waves-light" type="submit" name="action" autofocus=""
                 href="<?php echo admin_url( 'admin-ajax.php?action=arcarbon_map_update' ) ?>" disabled
-                data-geojson="<?php handleGeojson(get_user_meta(get_current_user_id(), "arcabon-map-geojson", true)); ?>" >
+                data-geojson="<?php handle_geojson(get_user_meta(get_current_user_id(), "arcabon-map-geojson", true)); ?>" >
                 Submit
                 <i class="material-icons right">send</i>
             </button>

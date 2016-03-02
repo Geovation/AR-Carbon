@@ -9,7 +9,8 @@
     $default_headers = array(
         "arcarbon_field_name"       => "Field Name",
         "arcarbon_farm_name"        => "Farm Name",
-        "arcarbon_designation"      => "Field designation",
+        "arcarbon_description"      => "Farm Description",
+        "arcarbon_designation"      => "Field Designation",
         "arcarbon_area"             => "Field Size (ha)",
         "arcarbon_som"              => "Field SOM (%)",
         "arcarbon_bulk_density"     => "Bulk Density (g/l)",
@@ -19,12 +20,13 @@
         "arcarbon_accumulation"     => "Accumulation since last test (kg/ha)"
     );
     $mandatory_headers = array(
-        "arcarbon_field_name" => "Field Name",
-        "arcarbon_area"       => "Field Size (ha)"
+        "arcarbon_field_name"  => "Field Name",
+        "arcarbon_area"        => "Field Size (ha)",
+        "arcarbon_description" => "Farm Name"
     );
 
     // Handle the case that headers don't exist - use our default headers
-    if (!$headers || $headers == "" || $headers == " ") {
+    if (empty($headers)) {
         $headers = json_encode($default_headers);
         update_option( "arcarbon_headers", $headers); // Convert to string
     }
@@ -43,8 +45,6 @@
     // Create return HTML
     $header = '<tr>';
     $footer = '<tr>';
-
-
     foreach ($headers_array as $key => $value) {
         if (!empty($key) && !empty($value)) {
             $header .= ('<th data-header="'.$key.'" >'.$value.'</th>');

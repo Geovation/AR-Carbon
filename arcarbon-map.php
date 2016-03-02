@@ -85,12 +85,13 @@ function run_arcarbon_map() {
 				enqueue( 'esri-leaflet-geocoder',  'esri-leaflet-geocoder.js');
 				enqueue( 'turf', 'turf.min.js');
 				enqueue( 'materialize', 'materialize.min.0.97.5.js');
-				enqueue( 'arcarbon', 'arcarbon.js');
 
-				enqueue( 'arcarbon_map_update', 'arcarbon-map-update.js');
-				localize( 'arcarbon_map_update', array(
-					'ajax_url' => admin_url( 'admin-ajax.php' ),
-					'user_id'  => get_current_user_id()
+				enqueue( 'arcarbon', 'arcarbon.js');
+				localize( 'arcarbon', array(
+					'USER_LOGGED_IN' => (is_user_logged_in()) ? 'true' : 'false',
+					'USER_GEOJSON'   => cleanse_user_geojson(get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true)),
+					'user_id'  => get_current_user_id(),
+					'ajax_url' => admin_url( 'admin-ajax.php' )
 				));
 
 			}
@@ -118,17 +119,10 @@ function run_arcarbon_map() {
 		$admin = current_user_can( 'administrator' );
 		$current_user = wp_get_current_user();
 		$user_id = get_current_user_id();
-		$is_logged_in = (is_user_logged_in()) ? 'true' : 'false';
 
 		if ( is_page( 'Populate Map' )  && in_the_loop() ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
 			?>
-			<script type="text/javascript">
-				<?php $g = get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true); ?>
-				var USER_LOGGED_IN = ("<?php echo $is_logged_in ?>" === 'true');
-				var USER_GEOJSON = <?php echo "'$g'"; ?>;
-
-			</script>
 
 			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -159,7 +153,7 @@ function run_arcarbon_map() {
 				$geojson = "false"; // If it doesn't exist just make it false
 			}
 
-			echo getUserData($id, $geojson); // Return the JSON
+			echo get_user_data($id, $geojson); // Return the JSON
 
 		}
 		else {
@@ -207,9 +201,6 @@ function run_arcarbon_map() {
 	}
 
 
-
-
-	//add_action( 'wp_ajax_nopriv_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
 	add_action( 'wp_ajax_arcarbon_admin_typeahead', 'arcarbon_admin_typeahead' );
 	function arcarbon_admin_typeahead() {
 
@@ -229,7 +220,6 @@ function run_arcarbon_map() {
 		die();
 	}
 
-	//add_action( 'wp_ajax_nopriv_arcarbon_admin_update_headers', 'arcarbon_admin_update_headers' );
 	add_action( 'wp_ajax_arcarbon_admin_update_headers', 'arcarbon_admin_update_headers' );
 	function arcarbon_admin_update_headers() {
 
@@ -248,12 +238,41 @@ function run_arcarbon_map() {
 		die();
 	}
 
+	add_action( 'wp_ajax_admin_update', 'arcarbon_admin_update' );
+	function arcarbon_admin_update() {
 
-	//add_action( 'wp_ajax_nopriv_arcarbon_map_update', 'arcarbon_map_update' );
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
+
+			$farmer_id = $_POST['farmer_id'];
+			$changed_fields = $_POST['changed_fields'];
+			$geojson = json_decode(get_user_meta($farmer_id, "arcarbon_map_geojson", true ), true); // as associative array
+			$returnGeojson = $geojson;
+
+			foreach ($geojson["features"] as $key => $field) {
+
+				$field_name = $field["properties"]["arcarbon_field_name"];
+				$changed_field = $changed_fields[$field_name]; // Get the update properties assoc array
+				if (is_array($changed_field) || is_object($changed_field)) {
+					foreach ($changed_field as $changed_key => $changed_val) {
+						$returnGeojson["features"][$key]["properties"][$changed_key] = $changed_val; // Take the geojson assoc array and replace the necessary val
+					}
+				}
+			}
+
+			$returnGeojson = json_encode($returnGeojson);
+			update_geojson($farmer_id, $returnGeojson); // Take the updated geojson and replace it with the old geojson
+
+		}
+		else {
+			echo $error_message;
+		}
+		die();
+	}
+
 	add_action( 'wp_ajax_arcarbon_map_update', 'arcarbon_map_update' );
 	function arcarbon_map_update() {
 
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_user_logged_in() ) {
 
 			$user_id = $_POST['user_id'];
 			$geojson = stripslashes($_POST['geojson']);
@@ -283,39 +302,8 @@ function run_arcarbon_map() {
 		die();
 	}
 
-	//add_action( 'wp_ajax_nopriv_admin_update', 'arcarbon_admin_update' );
-	add_action( 'wp_ajax_admin_update', 'arcarbon_admin_update' );
-	function arcarbon_admin_update() {
 
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( 'administrator' )) {
-
-			$farmer_id = $_POST['farmer_id'];
-			$changed_fields = $_POST['changed_fields'];
-			$geojson = json_decode(get_user_meta($farmer_id, "arcarbon_map_geojson", true ), true); // as associative array
-			$returnGeojson = $geojson;
-
-			foreach ($geojson["features"] as $key => $field) {
-
-				$field_name = $field["properties"]["arcarbon_field_name"];
-				$changed_field = $changed_fields[$field_name]; // Get the update properties assoc array
-				if (is_array($changed_field) || is_object($changed_field)) {
-					foreach ($changed_field as $changed_key => $changed_val) {
-						$returnGeojson["features"][$key]["properties"][$changed_key] = $changed_val; // Take the geojson assoc array and replace the necessary val
-					}
-				}
-			}
-
-			$returnGeojson = json_encode($returnGeojson);
-			updateGeojson($farmer_id, $returnGeojson); // Take the updated geojson and replace it with the old geojson
-
-		}
-		else {
-			echo $error_message;
-		}
-		die();
-	}
-
-	function updateGeojson($farmer_id, $geojson) {
+	function update_geojson($farmer_id, $geojson) {
 
 		$updateGeojson = update_user_meta( $farmer_id, "arcarbon_map_geojson", $geojson );
 		$updateGeojsonStr = ($updateGeojson)  ? 'true' : 'false';
@@ -334,11 +322,11 @@ function run_arcarbon_map() {
 			echo $geojson_error;
 		}
 		else {
-			echo getUserData($farmer_id, $geojson);
+			echo get_user_data($farmer_id, $geojson);
 		}
 	}
 
-	function getUserData($farmer_id, $geojson) {
+	function get_user_data($farmer_id, $geojson) {
 		$headers = json_decode(get_option("arcarbon_headers"));
 		$geojson = json_decode($geojson);
 		$user = get_user_by("ID", $farmer_id);
@@ -353,16 +341,30 @@ function run_arcarbon_map() {
 		);
 	}
 
-	function handleGeojson($geojson) {
+    // Handle geojson that is passed to our farmer when they load the map
+    function handle_geojson($geojson) {
 
-		if ($geojson == false) {
-			return "";
-		}
-		else if ( is_string($geojson) ) {
+        if ($geojson == false) {
+            return "";
+        }
+        else if ( is_string($geojson) ) {
+            return $geojson;
+        }
+    }
+
+
+	//
+	function cleanse_user_geojson($geojson) {
+
+		if ( !empty($geojson) ) {
 			return $geojson;
 		}
-	}
+		else {
+			return "";
+		}
 
+
+	}
 
 }
 

@@ -17,7 +17,7 @@ jQuery(document).ready(function($) {
         var changedFields = {};
         var title;
 
-        // Loop throw all the rows and headers and create a object of our updated fields
+        // Loop through all the rows and headers and create a object of our updated fields
         rowsSelector.each(function(i, row){
             headerSelector.each(function(j, column){
                 var key = getCellKey(j);
