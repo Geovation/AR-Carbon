@@ -274,7 +274,7 @@ function run_arcarbon_map() {
 
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_user_logged_in() ) {
 
-			$user_id = $_POST['user_id'];
+			$user_id = get_current_user_id();
 			$geojson = stripslashes($_POST['geojson']);
 
 			// REPLACE THIS WITH UPDATE GEOJSON WHEN YOU HAVE TIME TO TEST
