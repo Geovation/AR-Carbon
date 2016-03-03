@@ -33,17 +33,6 @@ jQuery(document).ready(function($) {
         DEVELOPMENT = true;
     }
 
-    // Console polyfill for non supporting browsers
-    window.console = window.console || {
-        log: function () {},
-        error: function () {},
-        debug: function () {},
-        warn: function () {}
-    };
-
-    // Setup the Esri API KEY
-
-
     // Initialisation
     var boundingBox = L.latLngBounds(
             L.latLng({lat: 49.62, lng:-10.7}),

@@ -56,6 +56,8 @@ function run_arcarbon_map() {
 		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
 		if (is_page( 'Populate Map' )) { // Make sure we are on the right page
 
+			enqueue('console', 'console.js');
+
 			// If the user is an administrator
 			if (current_user_can( 'administrator' )) {
 

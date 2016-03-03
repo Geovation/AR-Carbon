@@ -1,13 +1,5 @@
 jQuery(document).ready(function($) {
 
-    // Console fallback
-    window.console = window.console || {
-        log: function () {},
-        error: function () {},
-        debug: function () {},
-        warn: function () {}
-    };
-
     function getChangedRows() {
         // Bring back a JSON object with all the cells with their changed values
 
