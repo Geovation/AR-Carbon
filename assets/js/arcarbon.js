@@ -33,17 +33,6 @@ jQuery(document).ready(function($) {
         DEVELOPMENT = true;
     }
 
-    // Console polyfill for non supporting browsers
-    window.console = window.console || {
-        log: function () {},
-        error: function () {},
-        debug: function () {},
-        warn: function () {}
-    };
-
-    // Setup the Esri API KEY
-
-
     // Initialisation
     var boundingBox = L.latLngBounds(
             L.latLng({lat: 49.62, lng:-10.7}),
@@ -349,12 +338,12 @@ jQuery(document).ready(function($) {
     }
 
     function hoverOn(domElement) {
-        //$(domElement).css("background-color", "#daeac6");
+        $(domElement).css("background-color", "#daeac6");
         changeLabelSize(domElement, 16, 100);
     }
 
     function hoverOff(domElement) {
-        //$(domElement).css("background-color", "#ffffff");
+        $(domElement).css("background-color", "#ffffff");
         changeLabelSize(domElement, 12, 100);
      }
 
@@ -400,7 +389,12 @@ jQuery(document).ready(function($) {
             disableSubmit();
         }
         else if (drawnItems.getLayers().length) {
-            enableSubmit();
+            if (hasPolygons(drawnItems)) {
+                enableSubmit();
+            }
+            else {
+                disableSubmit();
+            }
         }
     }
 
@@ -473,8 +467,7 @@ jQuery(document).ready(function($) {
                 iconSize: [110, 1]
             })
         }).addTo(map);
-        // .on("mouseover", function() { hoverOn(domElement);})  //We need to do these here so we can do mouserover/clicking of labels
-        // .on("click", function(){ populateFieldTextModal(layer); });
+
     }
 
     function getLabel(layer) {
@@ -638,6 +631,16 @@ jQuery(document).ready(function($) {
     function isPolygon(layer) {
         return (layer.hasOwnProperty("_latlngs") === true);
     }
+    function hasPolygons(layers){
+        var polygons = false;
+        layers.eachLayer(function(layer){
+            if (isPolygon(layer)) { // Lets make sure there are actual fields
+                polygons = true;
+            }
+        });
+        return polygons;
+    }
+
     function userFarmUndefined() {
         return userFarm === undefined;
     }
@@ -680,11 +683,11 @@ jQuery(document).ready(function($) {
 
           container.onclick = function(){
               if (!userFarmUndefined()) {
-                  map.setView(userFarm.getLatLng(), 13);
+                  map.setView(userFarm.getLatLng(), 16);
               }
               else {
                   map.eachLayer(function(layer) {
-                      if (layer.getBounds){
+                      if (layer.getBounds && isPolygon(layer)){
                           map.fitBounds(layer.getBounds());
                           return;
                       }
@@ -712,12 +715,12 @@ jQuery(document).ready(function($) {
         };
 
         var modalOptions = {
-                dismissible: false,
-                opacity: 0.5,
-                in_duration: 350,
-                out_duration: 250,
-                ready: undefined,
-                complete: undefined,
+            dismissible: false,
+            opacity: 0.5,
+            in_duration: 350,
+            out_duration: 250,
+            ready: undefined,
+            complete: undefined
          };
 
 

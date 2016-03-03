@@ -3,14 +3,6 @@ var lastLoadedData;
 
 jQuery(document).ready(function($) {
 
-    // Console fallback
-    window.console = window.console || {
-        log: function () {},
-        error: function () {},
-        debug: function () {},
-        warn: function () {}
-    };
-
     // Set modal options
     var modalOptions = {
         dismissible: true,
@@ -109,12 +101,12 @@ jQuery(document).ready(function($) {
     });
 
     // When the Admin changes headers
-    (function () {
+    function addHeaderChangeHandler() {
         var previous;
 
         $(".edit-field-titles").on('focus', function() {
             previousVal = this.value; // Save the previous value so we can revert to it
-        }).change(function(){
+        }).on('change', function(){
 
             var footerSelector = ".dataTables_scrollFootInner table tfoot tr th";
             var headerSelector = ".dataTables_scrollHeadInner table thead tr th";
@@ -168,7 +160,8 @@ jQuery(document).ready(function($) {
           }
         });
 
-    })(); // Create closure to prevent pollution with previous
+    } // Create closure to prevent pollution with previous
+    addHeaderChangeHandler(); // Call the function
 
     $(document).on("keyup", ".add-column-input", function(){
         // When user interacts withe the add column input, make the button available
@@ -182,8 +175,8 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // When user interacts withe the remove column select, make the button available
     $(document).on("focus", ".remove-column-input", function(){
-        // When user interacts withe the remove column select, make the button available
         $(".remove-column-holder").prop("disabled", false);
         $(".remove-column").css("background-color", "#FF4C4C !important");
 
@@ -191,8 +184,7 @@ jQuery(document).ready(function($) {
 
 
     // Update confirm handler is in admin-update.js
-
-     function getUserData(id) {
+    function getUserData(id) {
          // Get the user data from their ID
          $.ajax({
              url: update.ajax_url,
@@ -226,11 +218,10 @@ jQuery(document).ready(function($) {
     }
 
 
-
+    // Populate the tables with the Farmers field data and contact details
     function populateDataTables(data) {
-        // Populate the tables with the Farmers field data and contact details
-        hideError();
 
+        hideError();
         var headers = data.headers;
         var geojson = data.geojson;
         var email   = data.email;
@@ -248,6 +239,7 @@ jQuery(document).ready(function($) {
                 $("#admin").remove();
                 $(".update-column-div").after($(generateTable(headers))); // Create the new table
                 setFarmerId(data.id); // Make sure the farmers ID is set on the table
+                addHeaderChangeHandler();
             }
         }
 
@@ -330,8 +322,9 @@ jQuery(document).ready(function($) {
         }
     }
 
+    // Populates the delete fields select input
     function populateDeleteFields(headers) {
-        // Populates the delete fields select input
+
 
         var select = $(".remove-column-input");
         select.find('option').remove(); // Remove all options
@@ -384,8 +377,8 @@ jQuery(document).ready(function($) {
         return isWellFormed;
     }
 
+    // Handle bad data or user not found
     function handleFailure(error) {
-        // Handle bad data or user not found
 
         hideTable(); // Hide the table
         showError(); // Show Error
@@ -411,20 +404,15 @@ jQuery(document).ready(function($) {
         }
     }
 
-
+    // Call the confirm delete modal for deleting columns
     $(".add-column-holder").on("click", function() {
-        // Call the confirm delete modal for deleting columns
-
         $("#confirm-add").openModal(modalOptions);
-
     });
 
-
+    // Click handler for when a new column button is clicked and column is added to the table
     $(".add-column-confirm").on("click", function() {
-        // Click handler for when a new column button is clicked and column is added to the table
 
         var button = $(".add-column-input");
-
         var newColumn = $(".add-column-input").val();
 
         var data = {
@@ -462,18 +450,15 @@ jQuery(document).ready(function($) {
 
     });
 
+    // Call the confirm delete modal for deleting columns
     $(".remove-column-holder").on("click", function(){
-        // Call the confirm delete modal for deleting columns
-
         $("#confirm-delete").openModal(modalOptions);
-
     });
 
+    // Click handler for when remove column button is clicked and column is removed from the table
     $(".delete-column-confirm").on("click", function(){
-        // Click handler for when remove column button is clicked and column is removed from the table
 
         var oldColumn = $(".remove-column-input").val();
-
         var data = {
             old_col_key   : oldColumn,
             header_action : "remove",
@@ -497,12 +482,11 @@ jQuery(document).ready(function($) {
     });
 
 
-    // Convenience functions
+    // General Functions
 
+    // Generate the table programmatically
     function generateTable(headers) {
-        // Generate the table programmatically
 
-        //console.log(headers);
         var newHeader = '<tr>';
         var newFooter = '<tr>';
 
@@ -529,18 +513,18 @@ jQuery(document).ready(function($) {
         return newTable;
     }
 
+    // Set the farmers ID in the #admin data
     function setFarmerId(id) {
-        // Set the farmers ID in the #admin data
         $("#admin").data("farmerid", id);
     }
 
+    // Set the farmers ID in the #admin data
     function getFarmerId() {
-        // Set the farmers ID in the #admin data
         return $("#admin").data("farmerid");
     }
 
+    // Find out the key of a specific value - we need this to check master name for row headers
     function getObjectKey( obj, value ) {
-        // Find out the key of a specific value - we need this to check master name for row headers
         for( var prop in obj ) {
             if( obj.hasOwnProperty( prop ) ) {
                  if( obj[ prop ] === value )
@@ -566,12 +550,11 @@ jQuery(document).ready(function($) {
         $(".contact-details").show();
     }
 
+    // Allow the table to be sorted even if we use inputs rather than plain text
     function addInputDataSorting() {
-        // Allow the table to be sorted even if we use inputs rather than plain text
-
         $.fn.dataTable.ext.order['dom-input'] = function (settings, col) {
             return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
-                var val = $('input', td).val() || $(td).text();
+                var val = $('input', td).val() || $(td).text(); // Work for text or value
                 return val;
             } );
         };
