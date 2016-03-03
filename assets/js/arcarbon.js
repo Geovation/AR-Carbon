@@ -68,13 +68,13 @@ jQuery(document).ready(function($) {
             }
         },
         modalOptions = {
-            dismissible: false,
+            dismissible: true,
             opacity: 0.5,
             in_duration: 350,
             out_duration: 250,
             ready: undefined,
-            complete: undefined,
-        };
+            complete: function() { $('.lean-overlay').remove(); } // Hack
+         };
 
     // Esri Base Map
     L.esri.basemapLayer("Imagery", {maxZoom: 18}).addTo(map); // 19 produces 'no map tiles available'
@@ -680,6 +680,7 @@ jQuery(document).ready(function($) {
           container.style.width = '27px';
           container.style.height = '27px';
           container.style.pointer= 'cursor';
+          container.title = "Take me to my fields";
 
           container.onclick = function(){
               if (!userFarmUndefined()) {

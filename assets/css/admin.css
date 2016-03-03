@@ -26,6 +26,12 @@ nav {
     background-color: #808080;
 }
 
+td {
+    text-overflow: ellipsis !important;
+    overflow-x: hidden;
+    max-width: 230px;
+}
+
 .remove-column {
     background-color: #808080 ;
 }
