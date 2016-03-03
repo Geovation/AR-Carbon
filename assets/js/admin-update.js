@@ -1,5 +1,15 @@
 jQuery(document).ready(function($) {
 
+    // Set modal options
+    var modalOptions = {
+        dismissible: true,
+        opacity: 0.5,
+        in_duration: 350,
+        out_duration: 250,
+        ready: undefined,
+        complete: function() { $('.lean-overlay').remove(); } // Hack
+     };
+
     function getChangedRows() {
         // Bring back a JSON object with all the cells with their changed values
 
