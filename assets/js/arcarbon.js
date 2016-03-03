@@ -15,14 +15,11 @@ jQuery(document).ready(function($) {
        }
     });
 
-
-
     // Custom layer properties
     // _arcArea
     // _arcDomElement
     // _arcFieldTitle
     // _arcFieldDescription
-
 
     var USER_GEOJSON = update.USER_GEOJSON;
     var USER_LOGGED_IN = update.USER_LOGGED_IN;
@@ -68,7 +65,7 @@ jQuery(document).ready(function($) {
             }
         },
         modalOptions = {
-            dismissible: true,
+            dismissible: false,
             opacity: 0.5,
             in_duration: 350,
             out_duration: 250,
@@ -85,7 +82,6 @@ jQuery(document).ready(function($) {
     }).addTo(map);
 
     // If user has previous polygons saved and we're not in developement, or the user is not logged in
-    //console.log(USER_LOGGED_IN)
     if ((USER_GEOJSON && !DEVELOPMENT) || !USER_LOGGED_IN) {
         enableDraw = false;
         enableEdit = false;
@@ -600,7 +596,7 @@ jQuery(document).ready(function($) {
     }
 
 
-    // Geometry related functions
+    // GEOMETRY RELATED FUNCTIONS
 
     function getArea(layer) {
         // Return the geodesic area of a polygon
@@ -667,6 +663,8 @@ jQuery(document).ready(function($) {
     }
 
 
+    // CUSTOM CONTROLS
+
     var homeControl = L.Control.extend({
         // Create our own home control button
       options: {
@@ -704,7 +702,7 @@ jQuery(document).ready(function($) {
     map.addControl(new homeControl());
 
 
-    // UPDATE
+    // UPDATE FIELD DATA
 
     $( document ).on( 'click', '.ar-map-submit-confirm', function() {
 
@@ -714,16 +712,6 @@ jQuery(document).ready(function($) {
             debug: function () {},
             warn: function () {}
         };
-
-        var modalOptions = {
-            dismissible: false,
-            opacity: 0.5,
-            in_duration: 350,
-            out_duration: 250,
-            ready: undefined,
-            complete: undefined
-         };
-
 
         var button  = $(".ar-map-submit");
         var geojson = button.attr("data-geojson");
