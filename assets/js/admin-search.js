@@ -109,12 +109,12 @@ jQuery(document).ready(function($) {
     });
 
     // When the Admin changes headers
-    (function () {
+    function addHeaderChangeHandler() {
         var previous;
 
         $(".edit-field-titles").on('focus', function() {
             previousVal = this.value; // Save the previous value so we can revert to it
-        }).change(function(){
+        }).on('change', function(){
 
             var footerSelector = ".dataTables_scrollFootInner table tfoot tr th";
             var headerSelector = ".dataTables_scrollHeadInner table thead tr th";
@@ -168,7 +168,8 @@ jQuery(document).ready(function($) {
           }
         });
 
-    })(); // Create closure to prevent pollution with previous
+    } // Create closure to prevent pollution with previous
+    addHeaderChangeHandler();
 
     $(document).on("keyup", ".add-column-input", function(){
         // When user interacts withe the add column input, make the button available
@@ -248,6 +249,7 @@ jQuery(document).ready(function($) {
                 $("#admin").remove();
                 $(".update-column-div").after($(generateTable(headers))); // Create the new table
                 setFarmerId(data.id); // Make sure the farmers ID is set on the table
+                addHeaderChangeHandler();
             }
         }
 

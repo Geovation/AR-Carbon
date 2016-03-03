@@ -353,7 +353,7 @@ function run_arcarbon_map() {
     }
 
 
-	//
+	// Check that the geojson isn't null/empty etc
 	function cleanse_user_geojson($geojson) {
 
 		if ( !empty($geojson) ) {

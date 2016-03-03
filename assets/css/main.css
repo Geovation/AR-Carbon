@@ -47,7 +47,8 @@ td {
 
 .ar-map-submit-holder {
     margin-bottom: 0px !important;
-    padding-bottom: 11px;
+    padding-bottom: 6px;
+    padding-top: 10px;
 }
 
 .ar-map-ar-title {
@@ -92,7 +93,7 @@ button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:active {
 }
 
 .ar-map-plots-holder {
-    height: 385px;
+    height: 375px;
 }
 
 .ar-map-plot {
