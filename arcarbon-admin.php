@@ -26,9 +26,9 @@
     );
 
     // Handle the case that headers don't exist - use our default headers
-    if (empty($headers)) {
-        $headers = json_encode($default_headers);
-        update_option( "arcarbon_headers", $headers); // Convert to string
+    if (empty($headers) || $headers == "null") {
+        $headers = json_encode($default_headers); // Convert to string
+        update_option( "arcarbon_headers", $headers);
     }
     // Handle previously created data
     else if (gettype($headers) == "string" ) {
