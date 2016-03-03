@@ -4,6 +4,13 @@
 <link rel="stylesheet" type='text/css' href="<?php echo $css . "admin.css" ?>">
 
 <?php
+
+    // Return whether json string is well formed
+    function is_json($string) {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+
     // If the carbon headers does not exist make them
     $headers = get_option( "arcarbon_headers");
     $default_headers = array(
@@ -25,19 +32,16 @@
         "arcarbon_description" => "Farm Name"
     );
 
-    // Handle the case that headers don't exist - use our default headers
-    if (empty($headers) || $headers == "null") {
+    // Handle the case that headers don't exist or are malformed
+    if ( empty($headers) || !is_json($headers) ) {
         $headers = json_encode($default_headers); // Convert to string
         update_option( "arcarbon_headers", $headers);
     }
-    // Handle previously created data
-    else if (gettype($headers) == "string" ) {
-        $headers_array = json_decode($headers, true); // Convert to associative array
-    }
 
+    $headers_array = json_decode($headers, true); // Convert to associative array
     // Add mandatory if for some reason they don't exist
     foreach ($mandatory_headers as $key => $value) {
-        if (!array_key_exists($key, $headers_array)) {
+        if ($headers_array && !array_key_exists($key, $headers_array)) {
             $headers_array[$key] = $value;
         }
     }
