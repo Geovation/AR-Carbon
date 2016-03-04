@@ -197,7 +197,8 @@ jQuery(document).ready(function($) {
          .done(function(data) {
              try {
                  data = JSON.parse(data);
-                 if (!data.name || data.name == " ") {
+                 console.log(data);
+                 if (!data.id) {
                      throw("No user was found under that username. Please check spelling.");
                  }
                  else {
@@ -317,7 +318,6 @@ jQuery(document).ready(function($) {
                 else {
                     rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
                 }
-
 
             }
             else {
