@@ -308,11 +308,7 @@ jQuery(document).ready(function($) {
             var feature = geojson.features[j];
 
             if (key && feature.properties[key]) { // If the text in the header matches a value in our headers
-                // if (key === "arcarbon_field_name") {
-                //     rows += '<td class="field-name-col">'+feature.properties[key]+'</td>';
-                // }
-                //
-                console.log(key);
+
                 if (key === "arcarbon_field_name") {
 
                     rows += '<td><input class="uneditable-td" readonly="readonly" type="text" value="'+feature.properties[key]+'"></td>';
@@ -321,7 +317,6 @@ jQuery(document).ready(function($) {
                 else {
                     rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
                 }
-
 
 
             }
