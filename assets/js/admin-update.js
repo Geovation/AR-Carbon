@@ -10,6 +10,7 @@ jQuery(document).ready(function($) {
         complete: function() { $('.lean-overlay').remove(); } // Hack
      };
 
+
     function getChangedRows() {
         // Bring back a JSON object with all the cells with their changed values
 
@@ -59,6 +60,7 @@ jQuery(document).ready(function($) {
             farmer_id      : getFarmer()
         };
 
+        console.log(getChangedRows());
         // Check that the data is no undefined etc
         if (data) {
             // Disable the button whilst the geojson is being submitted
