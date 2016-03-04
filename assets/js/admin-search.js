@@ -311,8 +311,18 @@ jQuery(document).ready(function($) {
                 // if (key === "arcarbon_field_name") {
                 //     rows += '<td class="field-name-col">'+feature.properties[key]+'</td>';
                 // }
+                //
+                console.log(key);
+                if (key === "arcarbon_field_name") {
 
-                rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
+                    rows += '<td><input class="uneditable-td" readonly="readonly" type="text" value="'+feature.properties[key]+'"></td>';
+                }
+                // FIX THIS
+                else {
+                    rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
+                }
+
+
 
             }
             else {

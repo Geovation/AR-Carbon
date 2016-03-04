@@ -80,10 +80,8 @@ td {
     min-width: 130px !important;
 }
 
-.field-name-col {
-    padding: 20px;
-    width: 100px;
-    text-align: center;
+.uneditable-td {
+    color: rgb(115, 115, 115) !important;
 }
 
 .contact tbody tr td {
