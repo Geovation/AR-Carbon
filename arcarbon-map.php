@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.25
+ * Version:           1.0.26
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -39,62 +39,91 @@ function run_arcarbon_map() {
 
 	// SCRIPT ENQUEUING AND LOCALIZATION
 
-	function localize($service, $admin_ajax_url) {
-		// Localize a AJAX Script
+	// Localize a AJAX Script
+	function localize_js($service, $admin_ajax_url) {
 		wp_localize_script( $service, 'update', $admin_ajax_url);
 	}
 
-	function enqueue($script, $file) {
+	// Enqueue our JavaScript a little more cleanly
+	function enqueue_js($script, $file) {
 		// Enqueue an AJAX script
 		wp_enqueue_script( $script, plugins_url( "/assets/js/" . $file, __FILE__ ), array('jquery') );
 	}
 
+	// Enqueue our CSS a little more cleanly
+	function enqueue_css($style, $file) {
+		if (starts_with($file, "//")) {
+			wp_enqueue_style( $style, $file ); // If file is http or https ... use agnostic //
+		}
+		else {
+			wp_enqueue_style( $style, plugins_url( '/assets/css/'. $file, __FILE__) );
+		}
+	}
+
+	function enquque_remote_css($style, $file) {
+		wp_enqueue_style( $style, $file );
+	}
+
 	// Load in all the necessary JavaScript
-	add_action( 'wp_enqueue_scripts', 'enqueue_scripts');
-	function enqueue_scripts() {
+	add_action( 'wp_enqueue_scripts', 'enqueue_scripts_and_styles', 1000);
+	function enqueue_scripts_and_styles() {
 
 		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
 		if (is_page( 'Populate Map' )) { // Make sure we are on the right page
 
-			enqueue('console', 'console.js');
+			enqueue_js('console', 'console.js');
+			enqueue_css('font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
+			enqueue_css('material-icons', '//fonts.googleapis.com/icon?family=Material+Icons');
 
 			// If the user is an administrator
 			if (current_user_can( 'administrator' )) {
 
 				// Vendor JavaScript
-				enqueue('materialize', 'materialize.min.0.97.5.js');
-				enqueue('tables', 'jquery.dataTables.min.js');
-				enqueue('typeahead', 'jquery-ui.min.js');
+				enqueue_js('materialize', 'materialize.min.0.97.5.js');
+				enqueue_js('tables', 'jquery.dataTables.min.js');
+				enqueue_js('typeahead', 'jquery-ui.min.js');
 
 				// Searching and table functionality
-				enqueue('arcarbon_admin_search', 'admin-search.js');
-				localize( 'arcarbon_admin_typeahead', $admin_ajax_url);
-				localize( 'arcarbon_admin_retrieve', $admin_ajax_url);
-				localize( 'arcarbon_admin_add_column', $admin_ajax_url);
-				localize( 'arcarbon_admin_update_headers', $admin_ajax_url);
+				enqueue_js('arcarbon_admin_search', 'admin-search.js');
+				localize_js( 'arcarbon_admin_typeahead', $admin_ajax_url);
+				localize_js( 'arcarbon_admin_retrieve', $admin_ajax_url);
+				localize_js( 'arcarbon_admin_add_column', $admin_ajax_url);
+				localize_js( 'arcarbon_admin_update_headers', $admin_ajax_url);
 
 				// Update variables in the table
-				enqueue('arcarbon_admin_update', 'admin-update.js');
-				localize( 'arcarbon_admin_update', $admin_ajax_url);
+				enqueue_js('arcarbon_admin_update', 'admin-update.js');
+				localize_js( 'arcarbon_admin_update', $admin_ajax_url);
+
+				enqueue_css('materialize', 'materialize.min.0.97.5.css');
+				enqueue_css('jquery-ui', 'jquery-ui.min.css');
+				enqueue_css('datatables', 'jquery.dataTables.min.css');
+				enqueue_css('admin', 'admin.css');
 
 			}
 			// If they are a user
 			else {
-				enqueue( 'leaflet','leaflet.js');
-				enqueue( 'esri-leaflet','esri-leaflet.js');
-				enqueue( 'leaflet-draw','leaflet.draw.js');
-				enqueue( 'leaflet-locate', 'L.Control.Locate.min.js');
-				enqueue( 'esri-leaflet-geocoder',  'esri-leaflet-geocoder.js');
-				enqueue( 'turf', 'turf.min.js');
-				enqueue( 'materialize', 'materialize.min.0.97.5.js');
+				enqueue_js( 'leaflet','leaflet.js');
+				enqueue_js( 'esri-leaflet','esri-leaflet.js');
+				enqueue_js( 'leaflet-draw','leaflet.draw.js');
+				enqueue_js( 'leaflet-locate', 'L.Control.Locate.min.js');
+				enqueue_js( 'esri-leaflet-geocoder',  'esri-leaflet-geocoder.js');
+				enqueue_js( 'turf', 'turf.min.js');
+				enqueue_js( 'materialize', 'materialize.min.0.97.5.js');
 
-				enqueue( 'arcarbon', 'arcarbon.js');
-				localize( 'arcarbon', array(
+				enqueue_js( 'arcarbon', 'arcarbon.js');
+				localize_js( 'arcarbon', array(
 					'USER_LOGGED_IN' => (is_user_logged_in()) ? 'true' : 'false',
 					'USER_GEOJSON'   => cleanse_user_geojson(get_user_meta( get_current_user_id(), "arcarbon_map_geojson", true)),
 					'user_id'  => get_current_user_id(),
 					'ajax_url' => admin_url( 'admin-ajax.php' )
 				));
+
+				enqueue_css('materialize', 'materialize.min.0.97.5.css');
+				enqueue_css('leaflet', 'leaflet.css');
+				enqueue_css('leaflet-draw', 'leaflet.draw.css');
+				enqueue_css('leaflet-locate', 'L.Control.Locate.min.css');
+				enqueue_css('esri-leafet', 'esri-leaflet-geocoder.css');
+				enqueue_css('farmer', 'farmer.css');
 
 			}
 		}
@@ -118,31 +147,23 @@ function run_arcarbon_map() {
 	// Overwrite the content for our page
 	add_action( 'the_content', 'arcarbon_map');
 	function arcarbon_map($content) {
-		$admin = current_user_can( 'administrator' );
-		$current_user = wp_get_current_user();
-		$user_id = get_current_user_id();
 
-		if ( is_page( 'Populate Map' )  && in_the_loop() ) {
+		if ( is_page( 'Populate Map' ) && in_the_loop() ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
-			?>
-
-			<link rel="stylesheet" type='text/css' href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-			<link rel="stylesheet" type='text/css' href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
-			<?php
-			$css = plugin_dir_url( __FILE__ ) . "assets/css/";
+			$admin = current_user_can( 'administrator' );
+			$current_user = wp_get_current_user();
+			$user_id = get_current_user_id();
 
 			if (!$admin) {
 				include_once 'arcarbon-farmer.php'; // Include the admin part of the app
 			}
 			else {
-
 				include_once 'arcarbon-admin.php'; // Include the admin part of the app
 			}
 		}
+
 	}
 
-	//add_action( 'wp_ajax_nopriv_arcarbon_admin_retrieve', 'arcarbon_admin_retrieve' );
 	add_action( 'wp_ajax_arcarbon_admin_retrieve', 'arcarbon_admin_retrieve' );
 	function arcarbon_admin_retrieve() {
 
@@ -366,6 +387,11 @@ function run_arcarbon_map() {
 		}
 
 
+	}
+
+	// Search backwards starting from haystack length characters from the end
+	function starts_with($haystack, $needle) {
+    	return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
 	}
 
 }
