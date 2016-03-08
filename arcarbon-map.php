@@ -35,8 +35,6 @@ if ( ! defined( 'WPINC' ) ) {
 
 
 function run_arcarbon_map() {
-
-
 	// SCRIPT ENQUEUING AND LOCALIZATION
 
 	// Localize a AJAX Script
@@ -155,10 +153,10 @@ function run_arcarbon_map() {
 			$user_id = get_current_user_id();
 
 			if (!$admin) {
-				include_once 'arcarbon-farmer.php'; // Include the admin part of the app
+				include_once 'arcarbon-farmer.php'; // Include the farmer view of the app
 			}
 			else {
-				include_once 'arcarbon-admin.php'; // Include the admin part of the app
+				include_once 'arcarbon-admin.php'; // Include the admin view of the app
 			}
 		}
 
@@ -292,6 +290,7 @@ function run_arcarbon_map() {
 		die();
 	}
 
+	// Update a users GeoJSON
 	add_action( 'wp_ajax_arcarbon_map_update', 'arcarbon_map_update' );
 	function arcarbon_map_update() {
 
@@ -325,7 +324,7 @@ function run_arcarbon_map() {
 		die();
 	}
 
-
+	// Update the users GeoJSON
 	function update_geojson($farmer_id, $geojson) {
 
 		$updateGeojson = update_user_meta( $farmer_id, "arcarbon_map_geojson", $geojson );
@@ -349,6 +348,7 @@ function run_arcarbon_map() {
 		}
 	}
 
+	// Return the headers, user geojson and the user details as JSON
 	function get_user_data($farmer_id, $geojson) {
 		$headers = json_decode(get_option("arcarbon_headers"));
 		$geojson = json_decode($geojson);
@@ -386,7 +386,6 @@ function run_arcarbon_map() {
 			return "";
 		}
 
-
 	}
 
 	// Search backwards starting from haystack length characters from the end
@@ -396,4 +395,5 @@ function run_arcarbon_map() {
 
 }
 
-run_arcarbon_map(); ?>
+run_arcarbon_map();
+?>
