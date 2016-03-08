@@ -150,17 +150,17 @@ nav {
 }
 
 .ar-admin-container .admin-update {
-    background-color: #86BD44 !important;
-    margin-top: 30px !important;
-    margin: auto !important;
+    background-color: #86BD44 ;
+    margin-top: 30px ;
+    margin: auto ;
     display: inherit;
     width: 400px;
 }
 
 .ar-admin-container .admin-cancel {
-    background-color: #FF7171 !important;
-    margin-top: 30px !important;
-    margin: auto !important;
+    background-color: #FF7171;
+    margin-top: 30px;
+    margin: auto;
     display: inherit;
     width: 400px;
 }
