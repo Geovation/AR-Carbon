@@ -197,7 +197,8 @@ jQuery(document).ready(function($) {
          .done(function(data) {
              try {
                  data = JSON.parse(data);
-                 if (!data.name || data.name == " ") {
+                 console.log(data);
+                 if (!data.id) {
                      throw("No user was found under that username. Please check spelling.");
                  }
                  else {
@@ -260,8 +261,8 @@ jQuery(document).ready(function($) {
         // Setup the contact details table
         var contactDetails =
             "<div class='contact-details'>" +
-                "<br><br><h5> Contact Details </h5>" +
-                "<table class='contact'>" +
+                "<br><br><h5 class='arcarbon-admin-h5'> Contact Details </h5>" +
+                "<table class='arcarbon-admin-contact'>" +
                     "<thead class='contact-head'>" +
                         "<th><b> Name </b></th>" +
                         "<th><b> Email </b></th>" +
@@ -282,7 +283,7 @@ jQuery(document).ready(function($) {
             $(".contact-details").replaceWith(contactDetails);
         }
         else {
-            $("#content-inner").append(contactDetails);
+            $(".ar-admin-container").append(contactDetails);
         }
 
         //console.log("\n ", isWellFormedTable($('#admin')[0]));
@@ -317,7 +318,6 @@ jQuery(document).ready(function($) {
                 else {
                     rows += '<td><input type="text" value="'+feature.properties[key]+'"></td>';
                 }
-
 
             }
             else {

@@ -1,87 +1,11 @@
-/** FIX THE THEME OVERWRITING **/
+/** Fix Materialze CSS overwrites **/
+
 nav {
     background-color: #F2F2F2;
     height: 40px !important;
     box-shadow: none;
 }
 
-#admin_wrapper {
-    margin-top: 30px !important;
-}
-
-.add-column-input, .remove-column-input {
-    font-size:16px;
-    width: 300px !important;
-    margin-left: 10px !important;
-}
-
-.add-column, .remove-column {
-    top: 0;
-    line-height: normal;
-    left: 0px;
-    height: 25px;
-    position: absolute;
-    width: 25px !important;
-    line-height: 1 !important;
-    background-color: #808080;
-}
-
-
-.remove-column {
-    background-color: #808080 ;
-}
-
-.remove-column-input {
-    display: inline-block !important;
-}
-
-.add-column-text, .remove-column-text {
-    width: 200px;
-    display:inline-block;
-        vertical-align: middle;
-}
-
-.add-column-holder, .remove-column-holder {
-    width: 25px !important;
-    height: 25px !important;
-    display: inline;
-    position: absolute;
-    margin-left: 20px;
-    margin-top: 12.5px;
-}
-
-
-
-.hidden-footer {
-    visibility: hidden;
-}
-
-.change-headers {
-    font-size: 12px;
-    color: #86BD44;
-}
-
-.dataTables_scrollFootInner table  tfoot tr th {
-    background-color: #F9F9F9 !important;
-}
-
-.dataTables_scroll th {
-    width: 130px !important;
-    min-width: 130px !important;
-}
-
-.dataTables_scrollBody td {
-    width: 130px !important;
-    min-width: 130px !important;
-}
-
-.uneditable-td {
-    color: rgb(115, 115, 115) !important;
-}
-
-.contact tbody tr td {
-    text-align: center !important;
-}
 
 .foot > nav {
     height: 20px !important;
@@ -95,42 +19,137 @@ nav {
     font-size: 13px !important;
 }
 
+/** CSS for app **/
+
+.ar-admin-container #admin_wrapper {
+    margin-top: 30px !important;
+}
+
+
+.ar-admin-container .arcarbon-admin-h5 {
+    font-size: 24px;
+}
+
+.ar-admin-container .arcarbon-admin-h4 {
+    font-size: 26px;
+    padding-top: 10px;
+    padding-bottom:10px;
+}
+
+.ar-admin-container .add-column-input, .ar-admin-container .remove-column-input {
+    font-size:16px;
+    width: 300px !important;
+    margin-left: 10px !important;
+}
+
+.ar-admin-container .add-column, .ar-admin-container .remove-column {
+    top: 0;
+    line-height: normal;
+    left: 0px;
+    height: 25px;
+    position: absolute;
+    width: 25px !important;
+    line-height: 1 !important;
+    background-color: #808080;
+}
+
+
+.ar-admin-container .remove-column {
+    background-color: #808080 ;
+}
+
+.ar-admin-container .remove-column-input {
+    display: inline-block !important;
+}
+
+.ar-admin-container .add-column-text, .ar-admin-container .remove-column-text {
+    width: 200px;
+    display:inline-block;
+        vertical-align: middle;
+}
+
+.ar-admin-container .add-column-holder, .ar-admin-container .remove-column-holder {
+    width: 25px !important;
+    height: 25px !important;
+    display: inline;
+    position: absolute;
+    margin-left: 20px;
+    margin-top: 12.5px;
+}
+
+.ar-admin-container .hidden-footer {
+    visibility: hidden;
+}
+
+.ar-admin-container .change-headers {
+    font-size: 12px;
+    color: #86BD44;
+}
+
+.ar-admin-container .dataTables_scrollFootInner table  tfoot tr th {
+    background-color: #F9F9F9 !important;
+}
+
+.ar-admin-container .dataTables_scroll th {
+    width: 130px !important;
+    min-width: 130px !important;
+}
+
+.ar-admin-container .dataTables_scrollBody td {
+    width: 130px !important;
+    min-width: 130px !important;
+}
+
+.ar-admin-container .uneditable-td {
+    color: rgb(115, 115, 115) !important;
+}
+
+.ar-admin-container .arcarbon-admin-contact {
+    margin-top: 30px !important;
+}
+
+.ar-admin-container .arcarbon-admin-contact tbody tr td {
+    text-align: center !important;
+    padding-top: 20px;
+}
+
+
 /** Other CSS **/
 
-#admin_filter, #example_length{
+.ar-admin-container #admin_filter, .ar-admin-container #example_length{
     display:none !important;
 }
 
-.username-search-holder {
+.ar-admin-container .username-search-holder {
     padding-left: 0px !important;
     padding-right: 0px !important;
 }
 
-.username-search-holder > label {
+.ar-admin-container .username-search-holder > label {
     left: 0px;
 }
 
-.dataTables_length {
+.ar-admin-container .dataTables_length {
     display: none !important;
 }
 
-.dataTables_scrollBody {
+.ar-admin-container .dataTables_scrollBody {
     overflow-x: scroll !important;
 }
 
-.contact-head th {
+.ar-admin-container .contact-head th {
     text-align: center;
 }
 
-.searchable {
+.ar-admin-container .searchable {
     background-color: rgb(249, 249, 249) !important;
 }
 
-#admin-holder {
+.ar-admin-container #admin-holder {
     display: none;
 }
 
-.admin-update {
+.ar-admin-container .admin-update {
     background-color: #86BD44 !important;
     margin-top: 30px !important;
     margin: auto !important;
@@ -138,7 +157,7 @@ nav {
     width: 400px;
 }
 
-.admin-cancel {
+.ar-admin-container .admin-cancel {
     background-color: #FF7171 !important;
     margin-top: 30px !important;
     margin: auto !important;

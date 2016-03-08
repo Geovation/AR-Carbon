@@ -1,0 +1,242 @@
+
+/** Fix Materialze CSS overwrites **/
+
+nav {
+    background-color: #F2F2F2;
+    height: 40px !important;
+    box-shadow: none;
+}
+
+.foot > nav {
+    height: 20px !important;
+    float: left;
+    display: block;
+    background-color: rgba(0,0,0,0);
+    width: 250.9px;
+}
+
+.foot nav a {
+    font-size: 13px !important;
+}
+
+/** CSS for app **/
+
+.ar-map-container #arcarbon-map {
+    width: 100%;
+    height: 600px;
+    padding :0px;
+    margin: 0px;
+}
+
+.ar-map-container .arcarbon-map-h5 {
+    padding-top: 5px;
+    padding-bottom:5px;
+    font-size: 18px;
+}
+
+.ar-map-container .arcarbon-map-h4 {
+    font-size: 22px;
+    padding-top: 10px;
+    padding-bottom:10px;
+}
+
+.ar-map-container .input-field {
+    padding: 0px !important;
+}
+
+.ar-map-container #username-search {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+.ar-map-container .input-field > label {
+    left: 0px !important;
+}
+
+.ar-map-container td {
+    text-align: center;
+}
+
+.ar-map-container .leaflet-control-zoom-in, .leaflet-control-zoom-out  {
+    text-decoration: none !important;
+}
+
+.ar-map-container .leaflet-draw-actions >li > a, .leaflet-draw-actions >li > a:hover {
+    background-color: white;
+}
+
+.ar-map-container .ar-map-total {
+    margin-bottom: 0px;
+    padding-bottom: 15px;
+}
+
+.ar-map-container .ar-map-full {
+    height: 100%;
+    padding: 0px !important;
+    margin: 0px;
+}
+
+.ar-map-container {
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+
+.ar-map-container .ar-map-submit-holder {
+    margin-bottom: 0px !important;
+    padding-bottom: 6px;
+    padding-top: 10px;
+}
+
+.ar-map-container .ar-map-ar-title {
+    padding-top: 10px;
+    margin-top: 0px;
+    text-align: center;
+    color: white;
+}
+
+.ar-map-container .ar-map-submit {
+    width: 80%;
+    margin: auto;
+    display: inherit;
+}
+
+.ar-map-container button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:hover {
+    background-color: #DAEAC6;
+    color: #15693b;
+}
+
+.ar-map-container button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light[disabled]:hover {
+    background-color: #DFDFDF;
+    box-shadow: none;
+    color: #9F9F9F;
+    cursor:  not-allowed;
+}
+
+
+.ar-map-container button.ar-map-dark-green.mat-btn.mat-waves-effect.mat-waves-light:active {
+    background-color: #0e6939;
+
+}
+
+.ar-map-container .ar-map-pad-top {
+    padding-top: 10px;
+}
+
+.ar-map-container .ar-map-plots-holder {
+    overflow-y: auto;
+    padding-top: 10px;
+    margin: 0px;
+}
+
+.ar-map-container .ar-map-plots-holder {
+    height: 375px;
+}
+
+.ar-map-container .ar-map-plot {
+    cursor: pointer !important;
+    padding-top:2px;
+    padding-bottom: 2px;
+}
+
+.ar-map-container .ar-map-dark-green, .ar-map-dark-green:focus {
+    background-color: #0e6939;
+}
+
+.ar-map-container #shop-nav {
+    height:40px;
+}
+
+.ar-map-container .ar-map-plot-title-holder {
+    margin-bottom: 4px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+.ar-map-container .leaflet-pelias-input {
+    padding: 0px !important;
+    left: 30px !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+.ar-map-container .leaflet-pelias-result, .leaflet-pelias-list {
+    margin-bottom: 0px !important;
+}
+
+.ar-map-container .field-title-label {
+    font-size: 14px !important;
+}
+
+.ar-map-container .leaflet-control-custom {
+    text-align : center;
+    line-height: 1.6;
+    font-size : 16px;
+    cursor: pointer;
+}
+
+.ar-map-container #field-text-edit {
+    z-index: 10000 !important;
+}
+
+.ar-map-container .ar-button-holder {
+    margin: 0px;
+}
+
+.ar-map-container .field-div-icon {
+    pointer-events: none;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 37px;
+    border: none;
+    font-weight: bold;
+    color: whitesmoke;
+    background-color: rgba(1, 1, 1, 0);
+    cursor: default;/*plain arrow*/
+}
+
+/** Make the arrow center. **/
+.ar-map-container .leaflet-control-locate .fa-location-arrow  {
+    padding: 0px;
+}
+
+.ar-map-container .label-text {
+    height: 0px;
+    width: 110px;
+    padding: 0px !important;
+    margin: 0px !important;
+    cursor: default; /*plain arrow*/
+}
+
+.ar-map-container .total-hectares-text {
+    text-overflow: ellipsis;
+    padding: 0px;
+    width: 100px;
+    overflow: hidden;
+}
+
+/** Esri Geocoder Overiding to make it less bad **/
+.ar-map-container .geocoder-control {
+    border-bottom: none !important;
+    background-color: white;
+    position: absolute;
+    left: 35px;
+    height: 50px;
+    padding-bottom: 7px;
+    border-radius: 2px;
+}
+.ar-map-container .geocoder-control-input {
+    border-bottom: none !important;
+}
+.ar-map-container .geocoder-control-suggestions {
+    top: 40px !important;
+
+}
+.ar-map-container .geocoder-control-list {
+    margin:0px !important;
+    padding:0px !important;
+
+}
+.ar-map-container .geocoder-control-suggestion {
+    margin: 0px !important;
+
+}

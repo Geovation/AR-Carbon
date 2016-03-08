@@ -1,7 +1,3 @@
-<link rel="stylesheet" type='text/css' href="<?php echo $css . "materialize.min.0.97.5.css" ?>">
-<link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery-ui.min.css" ?>">
-<link rel="stylesheet" type='text/css' href="<?php echo $css . "jquery.dataTables.min.css" ?>">
-<link rel="stylesheet" type='text/css' href="<?php echo $css . "admin.css" ?>">
 
 <?php
 
@@ -62,20 +58,19 @@
 
 ?>
 
-<div class="row ar-map-full">
+<div class="row ar-admin-container">
    <form class="search-farmers"  autocomplete="off" >
     <div class="row">
-       <div class="input-field col s12 username-search-holder">
-         <input id="username-search" class="validate typahead" type="text" data-provide="typeahead" autocomplete="off" disabled>
-         <label for="username-search">Name, ID or Email</label>
-       </div>
-     </div>
-   </div>
+        <div class="input-field col s12 username-search-holder">
+            <input id="username-search" class="validate typahead" type="text" data-provide="typeahead" autocomplete="off" disabled>
+            <label for="username-search">Name, ID or Email</label>
+        </div>
+    </div>
    </form>
 
     <div id="admin-holder" data-farmerid="">
         <div class="row">
-            <h5 style="display: inline;"> Field Information </h5>
+            <h5 class="arcarbon-admin-h5" style="display: inline;"> Field Information </h5>
         </div>
         <div class="update-column-div">
             <div class="add-column-div row">
@@ -114,66 +109,68 @@
         </button>
     </div>
 
+    <!-- Submit button confirm Modal Structure -->
+    <div id="update-submit" class="modal">
+    <div class="modal-content">
+      <h4 class="arcarbon-admin-h4">Are you sure you want to update these fields?</h4>
+      <p>Are you sure that you want to confirm these changes? This will confirm your changes.</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Wait, I want to change something</a>
+      <a href="#!" class=" admin-update-confirm modal-action modal-close waves-effect waves-green btn-flat">Confirm</a>
+    </div>
+    </div>
+
+    <!-- Submit button confirm Modal Structure -->
+    <div id="cancel-submit" class="modal">
+    <div class="modal-content">
+      <h4 class="arcarbon-admin-h4">Do you want to cancel your changes?</h4>
+      <p>Cancelling your changes will revert the table back to how it was since your last save. Are you sure you want to do that?</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">No, I don't want to do that</a>
+      <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Yes, cancel my changes</a>
+    </div>
+    </div>
+
+    <!-- Submit button confirm Modal Structure -->
+    <div id="admin-error" class="modal">
+    <div class="modal-content">
+      <h4 class="arcarbon-admin-h4">Oh No! Something has gone wrong!</h4>
+      <p>Something didn't quite go to plan. One possible reason is your network connection is down.</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Okay</a>
+    </div>
+    </div>
+
+    <!-- Confirm column delete Modal Structure -->
+    <div id="confirm-delete" class="modal">
+    <div class="modal-content">
+      <h4 class="arcarbon-admin-h4">Are you sure you want to delete this column?</h4>
+      <p>Deleting this column will remove all data for all users, are you sure this is something you want to do?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I don't want to do that</a>
+        <a href="#!" class=" delete-column-confirm modal-action modal-close waves-effect waves-green btn-flat">Delete it!</a>
+    </div>
+    </div>
+
+    <!-- Confirm column add Modal Structure -->
+    <div id="confirm-add" class="modal">
+        <div class="modal-content">
+          <h4 class="arcarbon-admin-h4">Are you sure you want to add a column?</h4>
+          <p>Adding this column will add it for all users, are you sure this is something you want to do?</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I don't want to do that</a>
+            <a href="#!" class=" add-column-confirm modal-action modal-close waves-effect waves-green btn-flat">Add it!</a>
+        </div>
+    </div>
+
 </div>
 
-<!-- Submit button confirm Modal Structure -->
-<div id="update-submit" class="modal">
-<div class="modal-content">
-  <h4>Are you sure you want to update these fields?</h4>
-  <p>Are you sure that you want to confirm these changes? This will confirm your changes.</p>
-</div>
-<div class="modal-footer">
-  <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Wait, I want to change something</a>
-  <a href="#!" class=" admin-update-confirm modal-action modal-close waves-effect waves-green btn-flat">Confirm</a>
-</div>
-</div>
 
-<!-- Submit button confirm Modal Structure -->
-<div id="cancel-submit" class="modal">
-<div class="modal-content">
-  <h4>Do you want to cancel your changes?</h4>
-  <p>Cancelling your changes will revert the table back to how it was since your last save. Are you sure you want to do that?</p>
-</div>
-<div class="modal-footer">
-  <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">No, I don't want to do that</a>
-  <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Yes, cancel my changes</a>
-</div>
-</div>
-
-<!-- Submit button confirm Modal Structure -->
-<div id="admin-error" class="modal">
-<div class="modal-content">
-  <h4>Oh No! Something has gone wrong!</h4>
-  <p>Something didn't quite go to plan. One possible reason is your network connection is down.</p>
-</div>
-<div class="modal-footer">
-  <a href="#!" class=" admin-cancel-confirm modal-action modal-close waves-effect waves-green btn-flat">Okay</a>
-</div>
-</div>
-
-<!-- Confirm column delete Modal Structure -->
-<div id="confirm-delete" class="modal">
-<div class="modal-content">
-  <h4>Are you sure you want to delete this column?</h4>
-  <p>Deleting this column will remove all data for all users, are you sure this is something you want to do?</p>
-</div>
-<div class="modal-footer">
-    <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I don't want to do that</a>
-    <a href="#!" class=" delete-column-confirm modal-action modal-close waves-effect waves-green btn-flat">Delete it!</a>
-</div>
-</div>
-
-<!-- Confirm column add Modal Structure -->
-<div id="confirm-add" class="modal">
-<div class="modal-content">
-  <h4>Are you sure you want to add a column?</h4>
-  <p>Adding this column will add it for all users, are you sure this is something you want to do?</p>
-</div>
-<div class="modal-footer">
-    <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">I don't want to do that</a>
-    <a href="#!" class=" add-column-confirm modal-action modal-close waves-effect waves-green btn-flat">Add it!</a>
-</div>
-</div>
 
 
 <?php
