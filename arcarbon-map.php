@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.0.26
+ * Version:           1.0.28
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -31,7 +31,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 
 // Include our options file for setting up plugin settings like API keys
-//include 'map-options.php'; // We don't use an API Key any more with Esri
+include 'map-options.php'; // We don't use an API Key any more with Esri
 
 
 function run_arcarbon_map() {
@@ -67,7 +67,7 @@ function run_arcarbon_map() {
 	function enqueue_scripts_and_styles() {
 
 		$admin_ajax_url = array( 'ajax_url' => admin_url( 'admin-ajax.php' ));
-		if (is_page( 'Populate Map' )) { // Make sure we are on the right page
+		if (is_map_page()) { // Make sure we are on the right page
 
 			enqueue_js('console', 'console.js');
 			enqueue_css('font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
@@ -92,7 +92,7 @@ function run_arcarbon_map() {
 				enqueue_js('arcarbon_admin_update', 'admin-update.js');
 				localize_js( 'arcarbon_admin_update', $admin_ajax_url);
 
-				enqueue_css('materialize', 'materialize.min.0.97.5.css');
+				enqueue_css('materialize', 'materialize-custom.css');
 				enqueue_css('jquery-ui', 'jquery-ui.min.css');
 				enqueue_css('datatables', 'jquery.dataTables.min.css');
 				enqueue_css('admin', 'admin.css');
@@ -116,7 +116,7 @@ function run_arcarbon_map() {
 					'ajax_url' => admin_url( 'admin-ajax.php' )
 				));
 
-				enqueue_css('materialize', 'materialize.min.0.97.5.css');
+				enqueue_css('materialize', 'materialize-custom.css');
 				enqueue_css('leaflet', 'leaflet.css');
 				enqueue_css('leaflet-draw', 'leaflet.draw.css');
 				enqueue_css('leaflet-locate', 'L.Control.Locate.min.css');
@@ -134,7 +134,7 @@ function run_arcarbon_map() {
 	// Overwrite the title for our page
 	add_filter('the_title', arcarbon_admin_title, 100);
 	function arcarbon_admin_title($title) {
-	  if( current_user_can( 'administrator' ) && $title == 'Populate Map' ){
+	  if( current_user_can( 'administrator' ) && is_map_page() ){
 		return "Admin Panel";
 	  }
 	  else {
@@ -146,7 +146,7 @@ function run_arcarbon_map() {
 	add_action( 'the_content', 'arcarbon_map');
 	function arcarbon_map($content) {
 
-		if ( is_page( 'Populate Map' ) && in_the_loop() ) {
+		if ( is_map_page() && in_the_loop() ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
 			$admin = current_user_can( 'administrator' );
 			$current_user = wp_get_current_user();
@@ -159,6 +159,21 @@ function run_arcarbon_map() {
 				include_once 'arcarbon-admin.php'; // Include the admin view of the app
 			}
 		}
+		else if (in_the_loop()) {
+			echo $content;
+		}
+
+	}
+
+	function is_map_page() {
+		$is_map = false;
+
+		$page_to_use = get_option("arcarbon_map_page_to_use");
+		if (!empty($page_to_use) && is_page($page_to_use) ) {
+			$is_map = true;
+		}
+
+		return $is_map;
 
 	}
 
@@ -211,8 +226,6 @@ function run_arcarbon_map() {
 				$new_headers = json_encode($headers);
 				update_option("arcarbon_headers", $new_headers);
 			}
-
-
 
 		}
 		else {

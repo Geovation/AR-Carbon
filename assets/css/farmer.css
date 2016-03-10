@@ -1,6 +1,6 @@
 
 /** Fix Materialze CSS overwrites **/
-
+/*
 nav {
     background-color: #F2F2F2;
     height: 40px !important;
@@ -18,6 +18,15 @@ nav {
 .foot nav a {
     font-size: 13px !important;
 }
+
+nav ul a {
+    transition: initial;
+    font-size: initial;
+    color: initial;
+    display: initial;
+    padding: initial;
+    cursor:initial;
+}*/
 
 /** CSS for app **/
 
