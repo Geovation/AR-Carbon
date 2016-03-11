@@ -13,7 +13,7 @@ function ar_carbon_map_create_menu() {
 
 function register_ar_carbon_map_settings() {
     //register our settings
-    register_setting( 'ar-carbon-map-settings-group', 'arcarbon_map_api_key' );
+    //register_setting( 'ar-carbon-map-settings-group', 'arcarbon_map_api_key' );
     register_setting( 'ar-carbon-map-settings-group', 'arcarbon_map_page_to_use' );
 }
 
@@ -33,7 +33,7 @@ function ar_carbon_map_settings_page() {
         'number' => '',
         'offset' => 0,
         'post_type' => 'page',
-        'post_status' => 'publish'
+        'post_status' => 'publish,inherit,pending,private,future,draft,trash'
     );
     $pages = get_pages();
 
@@ -48,8 +48,14 @@ function ar_carbon_map_settings_page() {
         <?php do_settings_sections( 'ar-carbon-map-settings-group' ); ?>
         <table class="form-table">
             <tr valign="top">
-            <th scope="row">Map API Key</th>
-            <td><input type="text" name="arcarbon_map_api_key" value="<?php echo esc_attr( get_option('map_api_key') ); ?>" /></td>
+            <!-- <th scope="row">Map API Key</th>
+            <td>
+            <input type="text" name="arcarbon_map_api_key"
+                value="
+                    <?php //echo esc_attr( get_option('map_api_key') ); ?>
+                "
+                />
+            </td> -->
             </tr>
             <tr>
             <th scope="row">Page to Use</th>
