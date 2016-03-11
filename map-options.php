@@ -33,7 +33,7 @@ function ar_carbon_map_settings_page() {
         'number' => '',
         'offset' => 0,
         'post_type' => 'page',
-        'post_status' => 'publish'
+        'post_status' => 'publish,inherit,pending,private,future,draft,trash'
     );
     $pages = get_pages();
 
