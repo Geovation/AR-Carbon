@@ -18,24 +18,9 @@ function register_ar_carbon_map_settings() {
 }
 
 function ar_carbon_map_settings_page() {
-    $args = array(
-        'sort_order' => 'asc',
-        'sort_column' => 'post_title',
-        'hierarchical' => 1,
-        'exclude' => '',
-        'include' => '',
-        'meta_key' => '',
-        'meta_value' => '',
-        'authors' => '',
-        'child_of' => 0,
-        'parent' => -1,
-        'exclude_tree' => '',
-        'number' => '',
-        'offset' => 0,
-        'post_type' => 'page',
+    $pages = get_pages(array(
         'post_status' => 'publish,inherit,pending,private,future,draft,trash'
-    );
-    $pages = get_pages();
+    ));
 
 
     ?>
