@@ -134,7 +134,7 @@ function run_arcarbon_map() {
 	// Overwrite the title for our page
 	add_filter('the_title', arcarbon_admin_title, 100);
 	function arcarbon_admin_title($title) {
-	  if( current_user_can( 'administrator' ) && is_map_page() ){
+	  if( current_user_can( 'administrator' ) && is_map_page() && in_the_loop() ){
 		return "Admin Panel";
 	  }
 	  else {

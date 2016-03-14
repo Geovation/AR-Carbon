@@ -46,12 +46,18 @@ function ar_carbon_map_settings_page() {
             <th scope="row">Page to Use</th>
             <td>
                 <select type="text" name="arcarbon_map_page_to_use"/>
-                <option>Choose a Page</option>
+                <option>None</option>
                 <?php
                     foreach($pages as $page) {
                         $page_title = $page->post_title;
                         $page_ID    = $page->ID;
-                        echo "<option value='$page_ID'>$page_title</option>";
+                        $selected_page_ID = get_option('arcarbon_map_page_to_use');
+                        if ($selected_page_ID == $page_ID) {
+                            echo "<option selected value='$page_ID'>$page_title</option>";
+                        }
+                        else {
+                            echo "<option value='$page_ID'>$page_title</option>";
+                        }
                     }
                 ?>
                 </select>
