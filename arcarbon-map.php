@@ -6,7 +6,7 @@
  * Plugin Name:       AR Carbon Map
  * Plugin URI:        http://www.geovation.uk
  * Description:       The map element of the AR Carbon Site
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            James Milner
  * Author URI:        http://www.geovation.uk
  * License:           GPL-2.0+
@@ -142,9 +142,10 @@ function run_arcarbon_map() {
 	  }
 	}
 
+	add_filter('the_content', arcarbon_content);
+
 	// Overwrite the content for our page
-	add_action( 'the_content', 'arcarbon_map');
-	function arcarbon_map($content) {
+	function arcarbon_content($content) {
 
 		if ( is_map_page() && in_the_loop() ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
@@ -160,7 +161,7 @@ function run_arcarbon_map() {
 			}
 		}
 		else if (in_the_loop()) {
-			echo $content;
+			echo do_shortcode($content);
 		}
 
 	}
