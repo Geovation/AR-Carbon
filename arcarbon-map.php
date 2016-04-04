@@ -142,10 +142,10 @@ function run_arcarbon_map() {
 	  }
 	}
 
-	add_filter('the_content', arcarbon_title);
+	add_filter('the_content', arcarbon_content);
 
 	// Overwrite the content for our page
-	function arcarbon_title($content) {
+	function arcarbon_content($content) {
 
 		if ( is_map_page() && in_the_loop() ) {
 			// IN THE LOOP NECESSARY! IT MAKES SURE THIS DOESNT FIRE 3 TIMEs.
