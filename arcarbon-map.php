@@ -142,8 +142,6 @@ function run_arcarbon_map() {
 	  }
 	}
 
-	apply_filters( 'the_content', get_the_content() );
-
 	add_filter('the_content', arcarbon_title);
 
 	// Overwrite the content for our page
